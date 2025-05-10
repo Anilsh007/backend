@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../utils/db');
+const bcrypt = require('bcrypt');
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const {
     clientAdminFname, clientAdminLname, clientAdminEmail, clientAdminPassword,
     clientAdminRepassword, clientAdmincompanyName, clientAdminAddress,
@@ -10,6 +11,7 @@ router.post('/', (req, res) => {
     clientAdminNumber, clientAdminQuestions, clientAdminLAnswer
   } = req.body;
 
+  // Field validation
   if (
     !clientAdminFname || !clientAdminLname || !clientAdminEmail || !clientAdminPassword ||
     !clientAdminRepassword || !clientAdmincompanyName || !clientAdminAddress ||
@@ -19,86 +21,47 @@ router.post('/', (req, res) => {
     return res.status(400).json({ message: 'All fields are required.' });
   }
 
-  const query = `
-    INSERT INTO cvcsem_admin (
-      clientAdminFname, clientAdminLname, clientAdminEmail, clientAdminPassword,
-      clientAdminRepassword, clientAdmincompanyName, clientAdminAddress,
-      clientAdminCity, clientAdminState, clientAdminZipCode,
-      clientAdminNumber, clientAdminQuestions, clientAdminLAnswer
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
+  if (clientAdminPassword !== clientAdminRepassword) {
+    return res.status(400).json({ message: 'Passwords do not match.' });
+  }
 
-  const values = [
-    clientAdminFname, clientAdminLname, clientAdminEmail, clientAdminPassword,
-    clientAdminRepassword, clientAdmincompanyName, clientAdminAddress,
-    clientAdminCity, clientAdminState, clientAdminZipCode,
-    clientAdminNumber, clientAdminQuestions, clientAdminLAnswer
-  ];
+  try {
+    // Check for existing email
+    console.log(`Checking email: ${clientAdminEmail}`);
+    const [rows] = await db.promise().execute(
+      'SELECT 1 FROM cvcsem_admin WHERE clientAdminEmail = ?',
+      [clientAdminEmail]
+    );
 
-  db.query(query, values, (err, result) => {
-    if (err) return res.status(500).json({ message: 'Database insert failed' });
-    res.status(201).json({ message: 'Admin added successfully', adminId: result.insertId });
-  });
-});
+    if (rows.length > 0) {
+      console.log('Email already exists.');
+      return res.status(409).json({ message: 'Email already registered.' });
+    }
 
-router.get('/', (req, res) => {
-  db.query('SELECT * FROM cvcsem_admin', (err, results) => {
-    if (err) return res.status(500).json({ message: 'Server error' });
-    res.json(results);
-  });
-});
+    // Hash password
+    const hashedPassword = await bcrypt.hash(clientAdminPassword, 10);
 
-router.get('/id/:id', (req, res) => {
-  db.query('SELECT * FROM cvcsem_admin WHERE id = ?', [req.params.id], (err, results) => {
-    if (err) return res.status(500).json({ message: 'Server error' });
-    if (results.length === 0) return res.status(404).json({ message: 'Admin not found' });
-    res.json(results[0]);
-  });
-});
+    // Insert user
+    const insertQuery = `
+      INSERT INTO cvcsem_admin (
+        clientAdminFname, clientAdminLname, clientAdminEmail, clientAdminPassword,
+        clientAdmincompanyName, clientAdminAddress, clientAdminCity, clientAdminState,
+        clientAdminZipCode, clientAdminNumber, clientAdminQuestions, clientAdminLAnswer
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
 
-router.get('/:name', (req, res) => {
-  db.query('SELECT * FROM cvcsem_admin WHERE Name = ?', [req.params.name], (err, results) => {
-    if (err) return res.status(500).json({ message: 'Server error' });
-    if (results.length > 0) res.json(results[0]);
-    else res.status(404).json({ message: 'Admin not found' });
-  });
-});
+    await db.promise().execute(insertQuery, [
+      clientAdminFname, clientAdminLname, clientAdminEmail, hashedPassword,
+      clientAdmincompanyName, clientAdminAddress, clientAdminCity, clientAdminState,
+      clientAdminZipCode, clientAdminNumber, clientAdminQuestions, clientAdminLAnswer
+    ]);
 
-router.put('/:id', (req, res) => {
-  const {
-    clientAdminFname, clientAdminLname, clientAdminEmail, clientAdminPassword,
-    clientAdminRepassword, clientAdmincompanyName, clientAdminAddress,
-    clientAdminCity, clientAdminState, clientAdminZipCode,
-    clientAdminNumber, clientAdminQuestions, clientAdminLAnswer
-  } = req.body;
+    return res.status(201).json({ message: 'Admin created successfully.' });
 
-  const query = `
-    UPDATE cvcsem_admin SET
-      clientAdminFname = ?, clientAdminLname = ?, clientAdminEmail = ?, clientAdminPassword = ?,
-      clientAdminRepassword = ?, clientAdmincompanyName = ?, clientAdminAddress = ?,
-      clientAdminCity = ?, clientAdminState = ?, clientAdminZipCode = ?,
-      clientAdminNumber = ?, clientAdminQuestions = ?, clientAdminLAnswer = ?
-    WHERE id = ?
-  `;
-
-  const values = [
-    clientAdminFname, clientAdminLname, clientAdminEmail, clientAdminPassword,
-    clientAdminRepassword, clientAdmincompanyName, clientAdminAddress,
-    clientAdminCity, clientAdminState, clientAdminZipCode,
-    clientAdminNumber, clientAdminQuestions, clientAdminLAnswer, req.params.id
-  ];
-
-  db.query(query, values, (err) => {
-    if (err) return res.status(500).json({ message: 'Update failed' });
-    res.json({ message: 'Admin updated successfully' });
-  });
-});
-
-router.delete('/:id', (req, res) => {
-  db.query('DELETE FROM cvcsem_admin WHERE id = ?', [req.params.id], (err) => {
-    if (err) return res.status(500).json({ message: 'Delete failed' });
-    res.json({ message: 'Admin deleted successfully' });
-  });
+  } catch (error) {
+    console.error('Server error:', error);
+    return res.status(500).json({ message: 'Internal server error.' });
+  }
 });
 
 module.exports = router;
