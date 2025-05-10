@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Admin User</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      max-width: 600px;
+      margin: auto;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+    }
+    .message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>Add Admin User</h2>
+  <form id="adminForm">
+    <label for="fname">First Name:</label>
+    <input type="text" id="fname" name="clientAdminFname" required>
+
+    <label for="lname">Last Name:</label>
+    <input type="text" id="lname" name="clientAdminLname" required>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="clientAdminEmail" required>
+
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="clientAdminPassword" required>
+
+    <label for="repassword">Re-enter Password:</label>
+    <input type="password" id="repassword" name="clientAdminRepassword" required>
+
+    <label for="companyName">Company Name:</label>
+    <input type="text" id="companyName" name="clientAdmincompanyName" required>
+
+    <label for="address">Address:</label>
+    <input type="text" id="address" name="clientAdminAddress" required>
+
+    <label for="city">City:</label>
+    <input type="text" id="city" name="clientAdminCity" required>
+
+    <label for="state">State:</label>
+    <input type="text" id="state" name="clientAdminState" required>
+
+    <label for="zip">Zip Code:</label>
+    <input type="text" id="zip" name="clientAdminZipCode" required>
+
+    <label for="number">Phone Number:</label>
+    <input type="text" id="number" name="clientAdminNumber" required>
+
+    <label for="question">Security Question:</label>
+    <input type="text" id="question" name="clientAdminQuestions" required>
+
+    <label for="answer">Answer:</label>
+    <input type="text" id="answer" name="clientAdminLAnswer" required>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <div class="message" id="message"></div>
+
+  <script>
+    const form = document.getElementById('adminForm');
+    const messageDiv = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = {
+        clientAdminFname: form.fname.value,
+        clientAdminLname: form.lname.value,
+        clientAdminEmail: form.email.value,
+        clientAdminPassword: form.password.value,
+        clientAdminRepassword: form.repassword.value,
+        clientAdmincompanyName: form.companyName.value,
+        clientAdminAddress: form.address.value,
+        clientAdminCity: form.city.value,
+        clientAdminState: form.state.value,
+        clientAdminZipCode: form.zip.value,
+        clientAdminNumber: form.number.value,
+        clientAdminQuestions: form.question.value,
+        clientAdminLAnswer: form.answer.value
+      };
+
+      try {
+        const res = await fetch('http://localhost:5000/api/admin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          messageDiv.innerText = `✅ ${data.message} (ID: ${data.adminId})`;
+          form.reset();
+        } else {
+          messageDiv.innerText = `❌ ${data.message}`;
+        }
+      } catch (error) {
+        messageDiv.innerText = '❌ Failed to connect to backend';
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+</html>
