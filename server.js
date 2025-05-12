@@ -1,7 +1,9 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const adminRoutes = require('./routes/adminRoutes');
-require('dotenv').config();
+const { testDBConnection } = require('./utils/db'); // <-- IMPORT THIS
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -12,6 +14,11 @@ app.use(express.static('public'));
 
 app.use('/api/admin', adminRoutes);
 
-app.listen(PORT, () => {
-  console.log(`🚀 Backend API running on http://localhost:${PORT}`);
-});
+async function startServer() {
+  await testDBConnection(); // <-- TEST DB
+  app.listen(PORT, () => {
+    console.log(`🚀 Backend API running on http://localhost:${PORT}`);
+  });
+}
+
+startServer();
