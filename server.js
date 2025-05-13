@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 5000;
 
 // ✅ Updated CORS configuration
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://cvcsem.com/'],
+  origin: ['http://localhost:5173', 'https://cvcsem.com'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
