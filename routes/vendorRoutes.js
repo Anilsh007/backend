@@ -1,18 +1,43 @@
-// routes/vendorRoutes.js
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../utils/db');
 
-// CREATE vendor
+// CREATE vendor with duplicate email check
 router.post('/', async (req, res) => {
   try {
-    const { vendorcode, vendorcompanyname, Fname, Lname, Email, Address1, Address2, City, State, ZipCode, Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5, Nigp1, Nigp2, Nigp3, Nigp4, Nigp5, Phone, Mobile, Sbclass, Class, UserId, Password, SecQuestion, SecAnswer, Aboutus, Type } = req.body;
+    const {
+      vendorcode, vendorcompanyname, Fname, Lname, Email,
+      Address1, Address2, City, State, ZipCode,
+      Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
+      Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
+      Phone, Mobile, Sbclass, Class, UserId, Password,
+      SecQuestion, SecAnswer, Aboutus, Type
+    } = req.body;
+
+    // Check for duplicate email
+    const [existing] = await pool.query('SELECT id FROM vendorRegister WHERE Email = ?', [Email]);
+    if (existing.length > 0) {
+      return res.status(400).json({ success: false, message: 'Email already registered.' });
+    }
 
     const sql = `
-      INSERT INTO vendorRegister (vendorcode, vendorcompanyname, Fname, Lname, Email, Address1, Address2, City, State, ZipCode, Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,Nigp1, Nigp2, Nigp3, Nigp4, Nigp5, Phone, Mobile, Sbclass, Class, UserId, Password, SecQuestion, SecAnswer, Aboutus, Type)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO vendorRegister (
+        vendorcode, vendorcompanyname, Fname, Lname, Email,
+        Address1, Address2, City, State, ZipCode,
+        Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
+        Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
+        Phone, Mobile, Sbclass, Class, UserId, Password,
+        SecQuestion, SecAnswer, Aboutus, Type
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
-    const values = [vendorcode, vendorcompanyname, Fname, Lname, Email, Address1, Address2, City, State, ZipCode, Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5, Nigp1, Nigp2, Nigp3, Nigp4, Nigp5, Phone, Mobile, Sbclass, Class, UserId, Password, SecQuestion, SecAnswer, Aboutus, Type];
+    const values = [
+      vendorcode, vendorcompanyname, Fname, Lname, Email,
+      Address1, Address2, City, State, ZipCode,
+      Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
+      Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
+      Phone, Mobile, Sbclass, Class, UserId, Password,
+      SecQuestion, SecAnswer, Aboutus, Type
+    ];
 
     await pool.query(sql, values);
     res.json({ success: true, message: 'Vendor added successfully.' });
@@ -34,18 +59,37 @@ router.get('/', async (req, res) => {
 });
 
 // UPDATE vendor
-// UPDATE vendor
 router.put('/:id', async (req, res) => {
   try {
     const id = req.params.id;
-    const { vendorcode, vendorcompanyname, Fname, Lname, Email, Address1, Address2, City, State, ZipCode, Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5, Nigp1, Nigp2, Nigp3, Nigp4, Nigp5, Phone, Mobile, Sbclass, Class, UserId, Password, SecQuestion, SecAnswer, Aboutus, Type } = req.body;
+    const {
+      vendorcode, vendorcompanyname, Fname, Lname, Email,
+      Address1, Address2, City, State, ZipCode,
+      Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
+      Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
+      Phone, Mobile, Sbclass, Class, UserId, Password,
+      SecQuestion, SecAnswer, Aboutus, Type
+    } = req.body;
 
     const sql = `
-      UPDATE vendorRegister
-      SET vendorcode = ?,vendorcompanyname = ?, Fname = ?, Lname = ?, Email = ?, Address1 = ?, Address2 = ?, City = ?, State = ?, ZipCode = ?, Samuin = ?, Fein = ?, Duns = ?, Naics1 = ?, Naics2 = ?, Naics3 = ?, Naics4 = ?, Naics5 = ?, Nigp1 = ?, Nigp2 = ?, Nigp3 = ?, Nigp4 = ?, Nigp5 = ?, Phone = ?, Mobile = ?, Sbclass = ?, Class = ?, UserId = ?, Password = ?, SecQuestion = ?, SecAnswer = ?, Aboutus = ?, Type = ?
+      UPDATE vendorRegister SET
+        vendorcode = ?, vendorcompanyname = ?, Fname = ?, Lname = ?, Email = ?,
+        Address1 = ?, Address2 = ?, City = ?, State = ?, ZipCode = ?,
+        Samuin = ?, Fein = ?, Duns = ?, Naics1 = ?, Naics2 = ?, Naics3 = ?, Naics4 = ?, Naics5 = ?,
+        Nigp1 = ?, Nigp2 = ?, Nigp3 = ?, Nigp4 = ?, Nigp5 = ?,
+        Phone = ?, Mobile = ?, Sbclass = ?, Class = ?, UserId = ?, Password = ?,
+        SecQuestion = ?, SecAnswer = ?, Aboutus = ?, Type = ?
       WHERE id = ?
     `;
-    const values = [id, vendorcode, vendorcompanyname, Fname, Lname, Email, Address1, Address2, City, State, ZipCode, Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5, Nigp1, Nigp2, Nigp3, Nigp4, Nigp5, Phone, Mobile, Sbclass, Class, UserId, Password, SecQuestion, SecAnswer, Aboutus, Type];
+    const values = [
+      vendorcode, vendorcompanyname, Fname, Lname, Email,
+      Address1, Address2, City, State, ZipCode,
+      Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
+      Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
+      Phone, Mobile, Sbclass, Class, UserId, Password,
+      SecQuestion, SecAnswer, Aboutus, Type,
+      id
+    ];
 
     await pool.query(sql, values);
     res.json({ success: true, message: 'Vendor updated successfully.' });
@@ -66,6 +110,5 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ error: 'Failed to delete vendor' });
   }
 });
-
 
 module.exports = router;

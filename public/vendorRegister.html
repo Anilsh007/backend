@@ -206,14 +206,15 @@
 
 <script>
     const API_URL = '/api/vendors';
+    let vendorsCache = [];
 
     async function fetchVendors() {
         try {
             const res = await fetch(API_URL);
             if (!res.ok) throw new Error('Failed to fetch vendors');
-            const vendors = await res.json();
+            vendorsCache = await res.json();
             const tbody = document.querySelector('#vendorTable tbody');
-            tbody.innerHTML = vendors.map(v => `
+            tbody.innerHTML = vendorsCache.map(v => `
                 <tr>
                     <td>${v.id}</td>
                     <td>${v.vendorcode}</td>
@@ -221,34 +222,34 @@
                     <td>${v.Fname}</td>
                     <td>${v.Lname}</td>
                     <td>${v.Email}</td>
-                    <td>${v.Address1}</td>
-                    <td>${v.Address2}</td>
-                    <td>${v.City}</td>
-                    <td>${v.State}</td>
-                    <td>${v.ZipCode}</td>
-                    <td>${v.Samuin}</td>
-                    <td>${v.Fein}</td>
-                    <td>${v.Duns}</td>
-                    <td>${v.Naics1}</td>
-                    <td>${v.Naics2}</td>
-                    <td>${v.Naics3}</td>
-                    <td>${v.Naics4}</td>
-                    <td>${v.Naics5}</td>
-                    <td>${v.Nigp1}</td>
-                    <td>${v.Nigp2}</td>
-                    <td>${v.Nigp3}</td>
-                    <td>${v.Nigp4}</td>
-                    <td>${v.Nigp5}</td>
-                    <td>${v.Phone}</td>
-                    <td>${v.Mobile}</td>
-                    <td>${v.Sbclass}</td>
-                    <td>${v.Class}</td>
-                    <td>${v.UserId}</td>
-                    <td>${v.Password}</td>
-                    <td>${v.SecQuestion}</td>
-                    <td>${v.SecAnswer}</td>
-                    <td>${v.Aboutus}</td>
-                    <td>${v.Type}</td>
+                    <td>${v.Address1 || ''}</td>
+                    <td>${v.Address2 || ''}</td>
+                    <td>${v.City || ''}</td>
+                    <td>${v.State || ''}</td>
+                    <td>${v.ZipCode || ''}</td>
+                    <td>${v.Samuin || ''}</td>
+                    <td>${v.Fein || ''}</td>
+                    <td>${v.Duns || ''}</td>
+                    <td>${v.Naics1 || ''}</td>
+                    <td>${v.Naics2 || ''}</td>
+                    <td>${v.Naics3 || ''}</td>
+                    <td>${v.Naics4 || ''}</td>
+                    <td>${v.Naics5 || ''}</td>
+                    <td>${v.Nigp1 || ''}</td>
+                    <td>${v.Nigp2 || ''}</td>
+                    <td>${v.Nigp3 || ''}</td>
+                    <td>${v.Nigp4 || ''}</td>
+                    <td>${v.Nigp5 || ''}</td>
+                    <td>${v.Phone || ''}</td>
+                    <td>${v.Mobile || ''}</td>
+                    <td>${v.Sbclass || ''}</td>
+                    <td>${v.Class || ''}</td>
+                    <td>${v.UserId || ''}</td>
+                    <td>${v.Password || ''}</td>
+                    <td>${v.SecQuestion || ''}</td>
+                    <td>${v.SecAnswer || ''}</td>
+                    <td>${v.Aboutus || ''}</td>
+                    <td>${v.Type || ''}</td>
                     <td>
                         <button class="btn btn-sm btn-primary" onclick='editVendor(${JSON.stringify(v).replace(/'/g, "\\'")})'>Edit</button>
                         <button class="btn btn-sm btn-danger" onclick='deleteVendor(${v.id})'>Delete</button>
@@ -272,7 +273,7 @@
         for (const key in data) {
             const input = form.elements[key];
             if (input) {
-                input.value = data[key];
+                input.value = data[key] || '';
             }
         }
         new bootstrap.Modal(document.getElementById('vendorModal')).show();
@@ -296,13 +297,22 @@
         const form = e.target;
         const formData = new FormData(form);
         const id = formData.get('id');
+        const email = formData.get('Email').trim().toLowerCase();
+
+        // Check if email already exists in vendorsCache (excluding current record if editing)
+        const emailExists = vendorsCache.some(v => v.Email && v.Email.toLowerCase() === email && v.id != id);
+
+        if (emailExists) {
+            alert('This email already exists. Please use a different email.');
+            return;
+        }
 
         const data = {
             vendorcode: formData.get('vendorcode'),
             vendorcompanyname: formData.get('vendorcompanyname'),
             Fname: formData.get('Fname'),
             Lname: formData.get('Lname'),
-            Email: formData.get('Email'),
+            Email: email,
             Address1: formData.get('Address1'),
             Address2: formData.get('Address2'),
             City: formData.get('City'),
@@ -343,13 +353,15 @@
                 body: JSON.stringify(data)
             });
             if (!res.ok) throw new Error('Save failed');
-            bootstrap.Modal.getInstance(document.getElementById('vendorModal')).hide();
+            new bootstrap.Modal(document.getElementById('vendorModal')).hide();
             fetchVendors();
-        } catch (error) {
-            console.error(error);
-            alert('Failed to save vendor');
+            resetForm();
+        } catch (err) {
+            console.error(err);
+            alert('Error saving vendor');
         }
     });
 
+    // Load vendors initially
     fetchVendors();
 </script>
