@@ -5,208 +5,34 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Management</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body class="bg-light">
-  <div class="container py-5">
-    <h2 class="mb-4">Admin Management</h2>
-    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#adminModal">
-      + Add Admin
-    </button>
-    <div id="message" class="alert d-none"></div>
-    <div class="table-responsive">
-      <table class="table table-bordered table-striped" id="adminTable">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Email</th>
-            <th>Company</th>
-            <th>City</th>
-            <th>State</th>
-            <th>Zip</th>
-            <th>Number</th>
-            <th>Question</th>
-            <th>Answer</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+  <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Logo</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse float-end justify-content-end" id="collapsibleNavbar">
+        <ul class="navbar-nav">
+          <li class="nav-item" page-name="clientAdmin">Client Admin</li>
+          <li class="nav-item" page-name="vendorRegister">Vendor Register</li>
+          <li class="nav-item" page-name="ClientUser">Client User</li>
+        </ul>
+      </div>
     </div>
+  </nav>
+
+  <div class="container-fluid mt-3">
+    <div id="content"></div>
   </div>
 
-  <!-- Modal -->
-  <div class="modal fade" id="adminModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-      <form id="adminForm" class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Admin Form</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body row g-3">
-          <input type="hidden" name="id" />
-          <div class="col-md-6"><label class="form-label">First Name</label><input type="text" name="fname" class="form-control" required /></div>
-          <div class="col-md-6"><label class="form-label">Last Name</label><input type="text" name="lname" class="form-control" required /></div>
-          <div class="col-md-6"><label class="form-label">Email</label><input type="email" name="email" class="form-control" required /></div>
-          <div class="col-md-6"><label class="form-label">Company</label><input type="text" name="companyName" class="form-control" required /></div>
-          <div class="col-md-6"><label class="form-label">Address</label><input type="text" name="address" class="form-control" required /></div>
-          <div class="col-md-6"><label class="form-label">City</label><input type="text" name="city" class="form-control" required /></div>
-          <div class="col-md-6"><label class="form-label">State</label><input type="text" name="state" class="form-control" required /></div>
-          <div class="col-md-6"><label class="form-label">Zip</label><input type="text" name="zip" class="form-control" required /></div>
-          <div class="col-md-6"><label class="form-label">Number</label><input type="text" name="number" class="form-control" required /></div>
-          <div class="col-md-6"><label class="form-label">Security Question</label><input type="text" name="question" class="form-control" required /></div>
-          <div class="col-md-6"><label class="form-label">Security Answer</label><input type="text" name="answer" class="form-control" required /></div>
-          <div class="col-md-6 password-group">
-            <label class="form-label">Password</label><input type="password" name="password" class="form-control" />
-          </div>
-          <div class="col-md-6 password-group">
-            <label class="form-label">Re-enter Password</label><input type="password" name="repassword" class="form-control" />
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-success">Save</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script>
-    const form = document.getElementById('adminForm');
-    const messageDiv = document.getElementById('message');
-    const passwordFields = document.querySelectorAll('.password-group');
-
-    function showMessage(type, text) {
-      messageDiv.className = `alert alert-${type}`;
-      messageDiv.textContent = text;
-      messageDiv.classList.remove('d-none');
-      setTimeout(() => messageDiv.classList.add('d-none'), 3000);
-    }
-
-    function addActionButtons(adminId) {
-      return `
-        <button class="btn btn-sm btn-warning edit-btn" data-id="${adminId}">Edit</button>
-        <button class="btn btn-sm btn-danger delete-btn" data-id="${adminId}">Delete</button>
-      `;
-    }
-
-    async function fetchAllAdmins() {
-      const res = await fetch('http://localhost:5000/api/admin');
-      const admins = await res.json();
-      const tbody = document.querySelector('#adminTable tbody');
-      tbody.innerHTML = '';
-
-      admins.forEach(admin => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${admin.id}</td>
-          <td>${admin.clientAdminFname}</td>
-          <td>${admin.clientAdminLname}</td>
-          <td>${admin.clientAdminEmail}</td>
-          <td>${admin.clientAdmincompanyName}</td>
-          <td>${admin.clientAdminCity}</td>
-          <td>${admin.clientAdminState}</td>
-          <td>${admin.clientAdminZipCode}</td>
-          <td>${admin.clientAdminNumber}</td>
-          <td>${admin.clientAdminQuestions}</td>
-          <td>${admin.clientAdminLAnswer}</td>
-          <td>${addActionButtons(admin.id)}</td>
-        `;
-        tbody.appendChild(row);
-      });
-
-      document.querySelectorAll('.delete-btn').forEach(btn =>
-        btn.addEventListener('click', async () => {
-          const id = btn.dataset.id;
-          if (confirm('Are you sure you want to delete this admin?')) {
-            const res = await fetch(`http://localhost:5000/api/admin/${id}`, { method: 'DELETE' });
-            const data = await res.json();
-            if (res.ok) {
-              showMessage('success', data.message);
-              fetchAllAdmins();
-            } else {
-              showMessage('danger', data.message);
-            }
-          }
-        })
-      );
-
-      document.querySelectorAll('.edit-btn').forEach(btn =>
-        btn.addEventListener('click', () => {
-          const id = btn.dataset.id;
-          const admin = admins.find(a => a.id == id);
-          if (admin) {
-            form.setAttribute('data-id', id);
-            form.fname.value = admin.clientAdminFname;
-            form.lname.value = admin.clientAdminLname;
-            form.email.value = admin.clientAdminEmail;
-            form.companyName.value = admin.clientAdmincompanyName;
-            form.address.value = admin.clientAdminAddress;
-            form.city.value = admin.clientAdminCity;
-            form.state.value = admin.clientAdminState;
-            form.zip.value = admin.clientAdminZipCode;
-            form.number.value = admin.clientAdminNumber;
-            form.question.value = admin.clientAdminQuestions;
-            form.answer.value = admin.clientAdminLAnswer;
-            form.password.value = '';
-            form.repassword.value = '';
-            passwordFields.forEach(el => el.style.display = 'none');
-            new bootstrap.Modal(document.getElementById('adminModal')).show();
-          }
-        })
-      );
-    }
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const id = form.getAttribute('data-id');
-
-      const formData = {
-        clientAdminFname: form.fname.value,
-        clientAdminLname: form.lname.value,
-        clientAdminEmail: form.email.value,
-        clientAdmincompanyName: form.companyName.value,
-        clientAdminAddress: form.address.value,
-        clientAdminCity: form.city.value,
-        clientAdminState: form.state.value,
-        clientAdminZipCode: form.zip.value,
-        clientAdminNumber: form.number.value,
-        clientAdminQuestions: form.question.value,
-        clientAdminLAnswer: form.answer.value,
-      };
-
-      if (!id) {
-        formData.clientAdminPassword = form.password.value;
-        formData.clientAdminRepassword = form.repassword.value;
-      }
-
-      try {
-        const res = await fetch(`http://localhost:5000/api/admin${id ? '/' + id : ''}`, {
-          method: id ? 'PUT' : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message);
-
-        showMessage('success', data.message);
-        form.reset();
-        form.removeAttribute('data-id');
-        passwordFields.forEach(el => el.style.display = '');
-        bootstrap.Modal.getInstance(document.getElementById('adminModal')).hide();
-        fetchAllAdmins();
-      } catch (err) {
-        showMessage('danger', err.message);
-      }
-    });
-
-    fetchAllAdmins();
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="custom.js"></script>
 </body>
 
 </html>

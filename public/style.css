@@ -1,0 +1,15 @@
+.navbar{
+    padding: 0;
+}
+
+.nav-item{
+    color: #fff;
+    padding: 10px;
+    cursor: pointer;
+    transition: 0.5s;
+    &:hover{
+        background-color: #007bff;
+        color: #fff;
+        transition: 0.5s;
+    }
+}

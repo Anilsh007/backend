@@ -1,0 +1,355 @@
+<h2>Vendor Management</h2>
+<button class="btn btn-primary mb-5" data-bs-toggle="modal" data-bs-target="#vendorModal" onclick="resetForm()">Add
+    Vendor</button>
+<div class="table-responsive">
+    <table class="table table-bordered" id="vendorTable">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Vendor Code</th>
+                <th>Company</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Address1</th>
+                <th>Address2</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Zip Code</th>
+                <th>Sam UIN</th>
+                <th>Fein</th>
+                <th>Duns</th>
+                <th>Naics1</th>
+                <th>Naics2</th>
+                <th>Naics3</th>
+                <th>Naics4</th>
+                <th>Naics5</th>
+                <th>Nigp1</th>
+                <th>Nigp2</th>
+                <th>Nigp3</th>
+                <th>Nigp4</th>
+                <th>Nigp5</th>
+                <th>Phone</th>
+                <th>Mobile</th>
+                <th>Sbclass</th>
+                <th>Class</th>
+                <th>UserId</th>
+                <th>Password</th>
+                <th>SecQuestion</th>
+                <th>SecAnswer</th>
+                <th>Aboutus</th>
+                <th>Type</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="vendorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content overflow-auto">
+            <form id="vendorForm" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title">Vendor Form</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Added name="id" here -->
+                    <input type="hidden" name="id" id="id">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Vendor Code</label>
+                            <input type="text" class="form-control" name="vendorcode" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Company Name</label>
+                            <input type="text" class="form-control" name="vendorcompanyname" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">First Name</label>
+                            <input type="text" class="form-control" name="Fname" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" class="form-control" name="Lname" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="Email" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Address1</label>
+                            <input type="text" class="form-control" name="Address1">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Address2</label>
+                            <input type="text" class="form-control" name="Address2">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">City</label>
+                            <input type="text" class="form-control" name="City">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">State</label>
+                            <input type="text" class="form-control" name="State">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Zip Code</label>
+                            <input type="number" class="form-control" name="ZipCode">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Sam UIN</label>
+                            <input type="text" class="form-control" name="Samuin">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Fein</label>
+                            <input type="text" class="form-control" name="Fein">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Duns</label>
+                            <input type="number" class="form-control" name="Duns">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Naics1</label>
+                            <input type="number" class="form-control" name="Naics1">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Naics2</label>
+                            <input type="number" class="form-control" name="Naics2">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Naics3</label>
+                            <input type="number" class="form-control" name="Naics3">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Naics4</label>
+                            <input type="number" class="form-control" name="Naics4">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Naics5</label>
+                            <input type="number" class="form-control" name="Naics5">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Nigp1</label>
+                            <input type="number" class="form-control" name="Nigp1">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Nigp2</label>
+                            <input type="number" class="form-control" name="Nigp2">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Nigp3</label>
+                            <input type="number" class="form-control" name="Nigp3">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Nigp4</label>
+                            <input type="number" class="form-control" name="Nigp4">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Nigp5</label>
+                            <input type="number" class="form-control" name="Nigp5">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Phone</label>
+                            <input type="number" class="form-control" name="Phone">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Mobile</label>
+                            <input type="number" class="form-control" name="Mobile">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">SB Class</label>
+                            <input type="text" class="form-control" name="Sbclass">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Class</label>
+                            <input type="text" class="form-control" name="Class">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">User ID</label>
+                            <input type="text" class="form-control" name="UserId">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" name="Password">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Security Question</label>
+                            <input type="text" class="form-control" name="SecQuestion">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Security Answer</label>
+                            <input type="text" class="form-control" name="SecAnswer">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">About Us</label>
+                            <textarea class="form-control" name="Aboutus"></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Type</label>
+                            <select class="form-select" name="Type">
+                                <option value="2" selected>Type 2</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = '/api/vendors';
+
+    async function fetchVendors() {
+        try {
+            const res = await fetch(API_URL);
+            if (!res.ok) throw new Error('Failed to fetch vendors');
+            const vendors = await res.json();
+            const tbody = document.querySelector('#vendorTable tbody');
+            tbody.innerHTML = vendors.map(v => `
+                <tr>
+                    <td>${v.id}</td>
+                    <td>${v.vendorcode}</td>
+                    <td>${v.vendorcompanyname}</td>
+                    <td>${v.Fname}</td>
+                    <td>${v.Lname}</td>
+                    <td>${v.Email}</td>
+                    <td>${v.Address1}</td>
+                    <td>${v.Address2}</td>
+                    <td>${v.City}</td>
+                    <td>${v.State}</td>
+                    <td>${v.ZipCode}</td>
+                    <td>${v.Samuin}</td>
+                    <td>${v.Fein}</td>
+                    <td>${v.Duns}</td>
+                    <td>${v.Naics1}</td>
+                    <td>${v.Naics2}</td>
+                    <td>${v.Naics3}</td>
+                    <td>${v.Naics4}</td>
+                    <td>${v.Naics5}</td>
+                    <td>${v.Nigp1}</td>
+                    <td>${v.Nigp2}</td>
+                    <td>${v.Nigp3}</td>
+                    <td>${v.Nigp4}</td>
+                    <td>${v.Nigp5}</td>
+                    <td>${v.Phone}</td>
+                    <td>${v.Mobile}</td>
+                    <td>${v.Sbclass}</td>
+                    <td>${v.Class}</td>
+                    <td>${v.UserId}</td>
+                    <td>${v.Password}</td>
+                    <td>${v.SecQuestion}</td>
+                    <td>${v.SecAnswer}</td>
+                    <td>${v.Aboutus}</td>
+                    <td>${v.Type}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick='editVendor(${JSON.stringify(v).replace(/'/g, "\\'")})'>Edit</button>
+                        <button class="btn btn-sm btn-danger" onclick='deleteVendor(${v.id})'>Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (error) {
+            console.error(error);
+            alert('Error loading vendors');
+        }
+    }
+
+    function resetForm() {
+        const form = document.getElementById('vendorForm');
+        form.reset();
+        form.elements['id'].value = '';
+    }
+
+    function editVendor(data) {
+        const form = document.getElementById('vendorForm');
+        for (const key in data) {
+            const input = form.elements[key];
+            if (input) {
+                input.value = data[key];
+            }
+        }
+        new bootstrap.Modal(document.getElementById('vendorModal')).show();
+    }
+
+    async function deleteVendor(id) {
+        if (confirm('Are you sure you want to delete this vendor?')) {
+            try {
+                const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Delete failed');
+                fetchVendors();
+            } catch (error) {
+                console.error(error);
+                alert('Failed to delete vendor');
+            }
+        }
+    }
+
+    document.getElementById('vendorForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const formData = new FormData(form);
+        const id = formData.get('id');
+
+        const data = {
+            vendorcode: formData.get('vendorcode'),
+            vendorcompanyname: formData.get('vendorcompanyname'),
+            Fname: formData.get('Fname'),
+            Lname: formData.get('Lname'),
+            Email: formData.get('Email'),
+            Address1: formData.get('Address1'),
+            Address2: formData.get('Address2'),
+            City: formData.get('City'),
+            State: formData.get('State'),
+            ZipCode: formData.get('ZipCode'),
+            Samuin: formData.get('Samuin'),
+            Fein: formData.get('Fein'),
+            Duns: formData.get('Duns'),
+            Naics1: formData.get('Naics1'),
+            Naics2: formData.get('Naics2'),
+            Naics3: formData.get('Naics3'),
+            Naics4: formData.get('Naics4'),
+            Naics5: formData.get('Naics5'),
+            Nigp1: formData.get('Nigp1'),
+            Nigp2: formData.get('Nigp2'),
+            Nigp3: formData.get('Nigp3'),
+            Nigp4: formData.get('Nigp4'),
+            Nigp5: formData.get('Nigp5'),
+            Phone: formData.get('Phone'),
+            Mobile: formData.get('Mobile'),
+            Sbclass: formData.get('Sbclass'),
+            Class: formData.get('Class'),
+            UserId: formData.get('UserId'),
+            Password: formData.get('Password'),
+            SecQuestion: formData.get('SecQuestion'),
+            SecAnswer: formData.get('SecAnswer'),
+            Aboutus: formData.get('Aboutus'),
+            Type: formData.get('Type')
+        };
+
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `${API_URL}/${id}` : API_URL;
+
+        try {
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (!res.ok) throw new Error('Save failed');
+            bootstrap.Modal.getInstance(document.getElementById('vendorModal')).hide();
+            fetchVendors();
+        } catch (error) {
+            console.error(error);
+            alert('Failed to save vendor');
+        }
+    });
+
+    fetchVendors();
+</script>
