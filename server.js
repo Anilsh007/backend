@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 5000;
 
 // ✅ Updated CORS configuration
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://cvcsem.com', 'http://localhost:5000/'],
+  origin: ['http://localhost:5173', 'https://cvcsem.com'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
@@ -16,9 +16,9 @@ app.use(cors({
 app.use(express.json());
 app.use(express.static('public'));
 const clientAdminRoutes = require('./routes/clientAdmin');
-const vendorRoutes = require('./routes/vendorRoutes');
 app.use('/api/client-admins', clientAdminRoutes);
 
+const vendorRoutes = require('./routes/vendorRoutes');
 app.use('/uploads', express.static('uploads'));
 app.use('/api/vendors', vendorRoutes);
 
