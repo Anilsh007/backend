@@ -13,3 +13,7 @@
         transition: 0.5s;
     }
 }
+
+.page-content{
+    display: none;
+}

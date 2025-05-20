@@ -1,6 +1,8 @@
 <h2>Vendor Management</h2>
 <button class="btn btn-primary mb-5" data-bs-toggle="modal" data-bs-target="#vendorModal" onclick="resetForm()">Add
     Vendor</button>
+
+<div id="alertBox" class="alert d-none" role="alert"></div>
 <div class="table-responsive">
     <table class="table table-bordered" id="vendorTable">
         <thead class="table-dark">
@@ -208,6 +210,14 @@
     const API_URL = '/api/vendors';
     let vendorsCache = [];
 
+    function showMessage(type, message) {
+        const alertBox = document.getElementById('alertBox');
+        alertBox.className = `alert alert-${type}`;
+        alertBox.textContent = message;
+        alertBox.classList.remove('d-none');
+        setTimeout(() => alertBox.classList.add('d-none'), 3000);
+    }
+
     async function fetchVendors() {
         try {
             const res = await fetch(API_URL);
@@ -258,7 +268,7 @@
             `).join('');
         } catch (error) {
             console.error(error);
-            alert('Error loading vendors');
+            showMessage('danger', 'Error loading vendors');
         }
     }
 
@@ -283,11 +293,12 @@
         if (confirm('Are you sure you want to delete this vendor?')) {
             try {
                 const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-                if (!res.ok) throw new Error('Delete failed');
+                const data = await res.json();
+                showMessage(res.ok ? 'success' : 'danger', data.message || 'Operation completed');
                 fetchVendors();
             } catch (error) {
                 console.error(error);
-                alert('Failed to delete vendor');
+                showMessage('danger', 'Failed to delete vendor');
             }
         }
     }
@@ -299,49 +310,14 @@
         const id = formData.get('id');
         const email = formData.get('Email').trim().toLowerCase();
 
-        // Check if email already exists in vendorsCache (excluding current record if editing)
         const emailExists = vendorsCache.some(v => v.Email && v.Email.toLowerCase() === email && v.id != id);
-
         if (emailExists) {
-            alert('This email already exists. Please use a different email.');
+            showMessage('danger', 'This email already exists. Please use a different email.');
             return;
         }
 
-        const data = {
-            vendorcode: formData.get('vendorcode'),
-            vendorcompanyname: formData.get('vendorcompanyname'),
-            Fname: formData.get('Fname'),
-            Lname: formData.get('Lname'),
-            Email: email,
-            Address1: formData.get('Address1'),
-            Address2: formData.get('Address2'),
-            City: formData.get('City'),
-            State: formData.get('State'),
-            ZipCode: formData.get('ZipCode'),
-            Samuin: formData.get('Samuin'),
-            Fein: formData.get('Fein'),
-            Duns: formData.get('Duns'),
-            Naics1: formData.get('Naics1'),
-            Naics2: formData.get('Naics2'),
-            Naics3: formData.get('Naics3'),
-            Naics4: formData.get('Naics4'),
-            Naics5: formData.get('Naics5'),
-            Nigp1: formData.get('Nigp1'),
-            Nigp2: formData.get('Nigp2'),
-            Nigp3: formData.get('Nigp3'),
-            Nigp4: formData.get('Nigp4'),
-            Nigp5: formData.get('Nigp5'),
-            Phone: formData.get('Phone'),
-            Mobile: formData.get('Mobile'),
-            Sbclass: formData.get('Sbclass'),
-            Class: formData.get('Class'),
-            UserId: formData.get('UserId'),
-            Password: formData.get('Password'),
-            SecQuestion: formData.get('SecQuestion'),
-            SecAnswer: formData.get('SecAnswer'),
-            Aboutus: formData.get('Aboutus'),
-            Type: formData.get('Type')
-        };
+        const data = Object.fromEntries(formData.entries());
+        data.Email = email;
 
         const method = id ? 'PUT' : 'POST';
         const url = id ? `${API_URL}/${id}` : API_URL;
@@ -352,13 +328,16 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
-            if (!res.ok) throw new Error('Save failed');
-            new bootstrap.Modal(document.getElementById('vendorModal')).hide();
-            fetchVendors();
-            resetForm();
+            const responseData = await res.json();
+            showMessage(res.ok ? 'success' : 'danger', responseData.message || 'Operation completed');
+            if (res.ok) {
+                bootstrap.Modal.getInstance(document.getElementById('vendorModal')).hide();
+                fetchVendors();
+                resetForm();
+            }
         } catch (err) {
             console.error(err);
-            alert('Error saving vendor');
+            showMessage('danger', 'Error saving vendor');
         }
     });
 

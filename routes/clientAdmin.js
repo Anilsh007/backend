@@ -2,47 +2,18 @@ const express = require('express');
 const router = express.Router();
 const { pool } = require('../utils/db');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-
-// Ensure uploads folder exists
-const uploadDir = path.join(__dirname, '..', 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
-
-// Multer storage config
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ storage });
-
-// Serve uploaded files statically
-router.use('/uploads', express.static(uploadDir));
+const upload = multer(); // for parsing multipart/form-data with no files
 
 /** ---------------------------
  * @route   POST /api/admin
  * @desc    Create new admin
  * --------------------------- */
-router.post('/', upload.single('Logo'), async (req, res) => {
+router.post('/', upload.none(), async (req, res) => {
   const {
-    CompanyName, FirstName, LastName, AdminEmail,
-    Address1, Address2, City, State, ZipCode, Phone,
-    Mobile, Password, Question, Answer, AboutUs,
-    LiceseQty, Type
+    CompanyName, FirstName, LastName, AdminEmail, Address1, Address2, City, State, ZipCode, Phone, Mobile, Password, Question, Answer, AboutUs, LicenseQty, Type
   } = req.body;
 
-  const logoFilename = req.file ? req.file.filename : '';
-
   try {
-    // Check if email already exists
     const [existing] = await pool.execute('SELECT id FROM clientAdmin WHERE AdminEmail = ?', [AdminEmail]);
     if (existing.length > 0) {
       return res.status(400).json({ message: 'Email already exists.' });
@@ -52,12 +23,12 @@ router.post('/', upload.single('Logo'), async (req, res) => {
       `INSERT INTO clientAdmin (
         CompanyName, FirstName, LastName, AdminEmail, Address1, Address2, City,
         State, ZipCode, Phone, Mobile, Password, Question, Answer,
-        AboutUs, Logo, LiceseQty, Type
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        AboutUs, LicenseQty, Type
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         CompanyName, FirstName, LastName, AdminEmail, Address1, Address2, City,
         State, ZipCode, Phone, Mobile, Password, Question, Answer,
-        AboutUs, logoFilename, LiceseQty, Type
+        AboutUs, LicenseQty, Type
       ]
     );
     res.status(201).json({ message: 'Admin created successfully.' });
@@ -101,16 +72,14 @@ router.get('/:id', async (req, res) => {
  * @route   PUT /api/admin/:id
  * @desc    Update an admin
  * --------------------------- */
-router.put('/:id', upload.single('Logo'), async (req, res) => {
+router.put('/:id', upload.none(), async (req, res) => {
   const { id } = req.params;
   const {
     CompanyName, FirstName, LastName, AdminEmail,
     Address1, Address2, City, State, ZipCode, Phone,
     Mobile, Password, Question, Answer, AboutUs,
-    LiceseQty, Type
+    LicenseQty, Type
   } = req.body;
-
-  const logoFilename = req.file ? req.file.filename : req.body.Logo;
 
   try {
     const [existing] = await pool.execute(
@@ -126,12 +95,12 @@ router.put('/:id', upload.single('Logo'), async (req, res) => {
       `UPDATE clientAdmin SET
         CompanyName = ?, FirstName = ?, LastName = ?, AdminEmail = ?, Address1 = ?, Address2 = ?,
         City = ?, State = ?, ZipCode = ?, Phone = ?, Mobile = ?, Password = ?, Question = ?, Answer = ?,
-        AboutUs = ?, Logo = ?, LiceseQty = ?, Type = ?
+        AboutUs = ?, LicenseQty = ?, Type = ?
         WHERE id = ?`,
       [
         CompanyName, FirstName, LastName, AdminEmail, Address1, Address2, City,
         State, ZipCode, Phone, Mobile, Password, Question, Answer,
-        AboutUs, logoFilename, LiceseQty, Type, id
+        AboutUs, LicenseQty, Type, id
       ]
     );
 
