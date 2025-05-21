@@ -5,6 +5,11 @@
 
     <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#adminModal">Add Admin</button>
 
+    <div class="mb-3">
+        <input type="text" id="searchClientId" class="form-control" placeholder="Search by Client ID">
+    </div>
+
+
     <div class="table-responsive">
         <table class="table table-bordered table-striped" id="adminTable">
             <thead class="table-light">
@@ -48,24 +53,41 @@
                 <div class="modal-body">
                     <input type="hidden" name="id" id="adminId" />
                     <div class="row g-3">
-                        <div class="col-md-4"><input class="form-control" name="ClientId" placeholder="Client Id" required></div>
-                        <div class="col-md-4"><input class="form-control" name="CompanyName" placeholder="Company Name" required></div>
-                        <div class="col-md-4"><input class="form-control" name="FirstName" placeholder="First Name" required></div>
-                        <div class="col-md-4"><input class="form-control" name="LastName" placeholder="Last Name" required></div>
-                        <div class="col-md-4"><input class="form-control" name="AdminEmail" placeholder="Email" required></div>
-                        <div class="col-md-4"><input class="form-control" name="Address1" placeholder="Address 1" required></div>
-                        <div class="col-md-4"><input class="form-control" name="Address2" placeholder="Address 2" required></div>
+                        <div class="col-md-4"><input class="form-control" name="ClientId" placeholder="Client Id"
+                                required></div>
+                        <div class="col-md-4"><input class="form-control" name="CompanyName" placeholder="Company Name"
+                                required></div>
+                        <div class="col-md-4"><input class="form-control" name="FirstName" placeholder="First Name"
+                                required></div>
+                        <div class="col-md-4"><input class="form-control" name="LastName" placeholder="Last Name"
+                                required></div>
+                        <div class="col-md-4"><input class="form-control" name="AdminEmail" placeholder="Email"
+                                required></div>
+                        <div class="col-md-4"><input class="form-control" name="Address1" placeholder="Address 1"
+                                required></div>
+                        <div class="col-md-4"><input class="form-control" name="Address2" placeholder="Address 2"
+                                required></div>
                         <div class="col-md-4"><input class="form-control" name="City" placeholder="City" required></div>
-                        <div class="col-md-4"><input class="form-control" name="State" placeholder="State" required></div>
-                        <div class="col-md-4"><input class="form-control" name="ZipCode" placeholder="Zip Code" type="number" required></div>
-                        <div class="col-md-4"><input class="form-control" name="Phone" placeholder="Phone" type="text" required></div>
-                        <div class="col-md-4"><input class="form-control" name="Mobile" placeholder="Mobile" type="text" required></div>
-                        <div class="col-md-4"><input class="form-control" name="Password" placeholder="Password" required></div>
-                        <div class="col-md-4"><input class="form-control" name="Question" placeholder="Security Question" required></div>
-                        <div class="col-md-4"><input class="form-control" name="Answer" placeholder="Answer" required></div>
-                        <div class="col-md-4"><input class="form-control" name="AboutUs" placeholder="About Us" required></div>
-                        <div class="col-md-4"><input class="form-control" name="LicenseQty" placeholder="License Qty" type="number" required></div>
-                        <div class="col-md-4"><input class="form-control" name="Type" placeholder="Type" type="number" required></div>
+                        <div class="col-md-4"><input class="form-control" name="State" placeholder="State" required>
+                        </div>
+                        <div class="col-md-4"><input class="form-control" name="ZipCode" placeholder="Zip Code"
+                                type="number" required></div>
+                        <div class="col-md-4"><input class="form-control" name="Phone" placeholder="Phone" type="text"
+                                required></div>
+                        <div class="col-md-4"><input class="form-control" name="Mobile" placeholder="Mobile" type="text"
+                                required></div>
+                        <div class="col-md-4"><input class="form-control" name="Password" placeholder="Password"
+                                required></div>
+                        <div class="col-md-4"><input class="form-control" name="Question"
+                                placeholder="Security Question" required></div>
+                        <div class="col-md-4"><input class="form-control" name="Answer" placeholder="Answer" required>
+                        </div>
+                        <div class="col-md-4"><input class="form-control" name="AboutUs" placeholder="About Us"
+                                required></div>
+                        <div class="col-md-4"><input class="form-control" name="LicenseQty" placeholder="License Qty"
+                                type="number" required></div>
+                        <div class="col-md-4"><input class="form-control" name="Type" placeholder="Type" type="number"
+                                required></div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -91,37 +113,45 @@
         setTimeout(() => message.classList.add('d-none'), 3000);
     }
 
-    async function loadAdmins() {
+    async function loadAdmins(searchValue = '') {
         const res = await fetch(apiUrl);
         const data = await res.json();
-        adminTable.innerHTML = data.map(admin => `
-            <tr>
-                <td>${admin.id}</td>
-                <td>${admin.ClientId}</td>
-                <td>${admin.CompanyName}</td>
-                <td>${admin.FirstName}</td>
-                <td>${admin.LastName}</td>
-                <td>${admin.AdminEmail}</td>
-                <td>${admin.Address1}</td>
-                <td>${admin.Address2}</td>
-                <td>${admin.City}</td>
-                <td>${admin.State}</td>
-                <td>${admin.ZipCode}</td>
-                <td>${admin.Phone}</td>
-                <td>${admin.Mobile}</td>
-                <td>${admin.Password}</td>
-                <td>${admin.Question}</td>
-                <td>${admin.Answer}</td>
-                <td>${admin.AboutUs}</td>
-                <td>${admin.LicenseQty}</td>
-                <td>${admin.Type}</td>
-                <td>
-                    <button class="btn btn-sm btn-warning" onclick="editAdmin(${admin.id})">Edit</button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteAdmin(${admin.id})">Delete</button>
-                </td>
-            </tr>
-        `).join('');
+        const filteredData = searchValue
+            ? data.filter(admin => admin.ClientId.toLowerCase().includes(searchValue.toLowerCase()))
+            : data;
+
+        adminTable.innerHTML = filteredData.map(admin => `
+        <tr>
+            <td>${admin.id}</td>
+            <td>${admin.ClientId}</td>
+            <td>${admin.CompanyName}</td>
+            <td>${admin.FirstName}</td>
+            <td>${admin.LastName}</td>
+            <td>${admin.AdminEmail}</td>
+            <td>${admin.Address1}</td>
+            <td>${admin.Address2}</td>
+            <td>${admin.City}</td>
+            <td>${admin.State}</td>
+            <td>${admin.ZipCode}</td>
+            <td>${admin.Phone}</td>
+            <td>${admin.Mobile}</td>
+            <td>${admin.Password}</td>
+            <td>${admin.Question}</td>
+            <td>${admin.Answer}</td>
+            <td>${admin.AboutUs}</td>
+            <td>${admin.LicenseQty}</td>
+            <td>${admin.Type}</td>
+            <td>
+                <button class="btn btn-sm btn-warning" onclick="editAdmin(${admin.id})">Edit</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteAdmin(${admin.id})">Delete</button>
+            </td>
+        </tr>
+    `).join('');
     }
+    document.getElementById('searchClientId').addEventListener('input', e => {
+        loadAdmins(e.target.value);
+    });
+
 
     adminForm.addEventListener('submit', async e => {
         e.preventDefault();

@@ -73,6 +73,31 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+/** -------------------------------
+ * @route   GET /api/admin/client/:clientId
+ * @desc    Get admin by ClientId
+ * ------------------------------- */
+router.get('/client/:clientId', async (req, res) => {
+  const { clientId } = req.params;
+
+  try {
+    const [rows] = await pool.execute(
+      'SELECT * FROM clientAdmin WHERE ClientId = ?',
+      [clientId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Admin with this ClientId not found.' });
+    }
+
+    res.status(200).json(rows[0]); // Return single object
+  } catch (err) {
+    console.error('❌ Fetch by ClientId error:', err);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+
 /** ---------------------------
  * @route   PUT /api/admin/:id
  * @desc    Update an admin
