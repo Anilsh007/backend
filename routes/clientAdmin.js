@@ -14,9 +14,14 @@ router.post('/', upload.none(), async (req, res) => {
   } = req.body;
 
   try {
-    const [existing] = await pool.execute('SELECT id FROM clientAdmin WHERE AdminEmail = ?', [AdminEmail]);
-    if (existing.length > 0) {
+    const [existingMail] = await pool.execute('SELECT id FROM clientAdmin WHERE AdminEmail = ?', [AdminEmail]);
+    if (existingMail.length > 0) {
       return res.status(400).json({ message: 'Email already exists.' });
+    }
+
+    const [existingClient] = await pool.execute('SELECT id FROM clientAdmin WHERE ClientId = ?', [ClientId]);
+    if (existingClient.length > 0) {
+      return res.status(400).json({ message: 'ClientId already exists.' });
     }
 
     await pool.execute(
@@ -82,13 +87,22 @@ router.put('/:id', upload.none(), async (req, res) => {
   } = req.body;
 
   try {
-    const [existing] = await pool.execute(
+    const [existingMail] = await pool.execute(
       'SELECT id FROM clientAdmin WHERE AdminEmail = ? AND id != ?',
       [AdminEmail, id]
     );
 
-    if (existing.length > 0) {
+    if (existingMail.length > 0) {
       return res.status(400).json({ message: 'Email already in use by another admin.' });
+    }
+
+    const [existingClient] = await pool.execute(
+      'SELECT id FROM clientAdmin WHERE ClientId = ? AND id != ?',
+      [ClientId, id]
+    );
+
+    if (existingClient.length > 0) {
+      return res.status(400).json({ message: 'ClientId already in use by another admin.' });
     }
 
     const [result] = await pool.execute(
