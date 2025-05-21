@@ -10,7 +10,7 @@ const upload = multer(); // for parsing multipart/form-data with no files
  * --------------------------- */
 router.post('/', upload.none(), async (req, res) => {
   const {
-    CompanyName, FirstName, LastName, AdminEmail, Address1, Address2, City, State, ZipCode, Phone, Mobile, Password, Question, Answer, AboutUs, LicenseQty, Type
+    ClientId, CompanyName, FirstName, LastName, AdminEmail, Address1, Address2, City, State, ZipCode, Phone, Mobile, Password, Question, Answer, AboutUs, LicenseQty, Type
   } = req.body;
 
   try {
@@ -21,12 +21,12 @@ router.post('/', upload.none(), async (req, res) => {
 
     await pool.execute(
       `INSERT INTO clientAdmin (
-        CompanyName, FirstName, LastName, AdminEmail, Address1, Address2, City,
+        ClientId, CompanyName, FirstName, LastName, AdminEmail, Address1, Address2, City,
         State, ZipCode, Phone, Mobile, Password, Question, Answer,
         AboutUs, LicenseQty, Type
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        CompanyName, FirstName, LastName, AdminEmail, Address1, Address2, City,
+        ClientId, CompanyName, FirstName, LastName, AdminEmail, Address1, Address2, City,
         State, ZipCode, Phone, Mobile, Password, Question, Answer,
         AboutUs, LicenseQty, Type
       ]
@@ -75,7 +75,7 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', upload.none(), async (req, res) => {
   const { id } = req.params;
   const {
-    CompanyName, FirstName, LastName, AdminEmail,
+    ClientId, CompanyName, FirstName, LastName, AdminEmail,
     Address1, Address2, City, State, ZipCode, Phone,
     Mobile, Password, Question, Answer, AboutUs,
     LicenseQty, Type
@@ -93,12 +93,12 @@ router.put('/:id', upload.none(), async (req, res) => {
 
     const [result] = await pool.execute(
       `UPDATE clientAdmin SET
-        CompanyName = ?, FirstName = ?, LastName = ?, AdminEmail = ?, Address1 = ?, Address2 = ?,
+        ClientId=?, CompanyName = ?, FirstName = ?, LastName = ?, AdminEmail = ?, Address1 = ?, Address2 = ?,
         City = ?, State = ?, ZipCode = ?, Phone = ?, Mobile = ?, Password = ?, Question = ?, Answer = ?,
         AboutUs = ?, LicenseQty = ?, Type = ?
         WHERE id = ?`,
       [
-        CompanyName, FirstName, LastName, AdminEmail, Address1, Address2, City,
+        ClientId, CompanyName, FirstName, LastName, AdminEmail, Address1, Address2, City,
         State, ZipCode, Phone, Mobile, Password, Question, Answer,
         AboutUs, LicenseQty, Type, id
       ]

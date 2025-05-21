@@ -1,4 +1,4 @@
-<div class="container py-5">
+<div class="container-fluid py-5">
     <h2 class="mb-4">Admin Management</h2>
 
     <div id="message" class="alert d-none"></div>
@@ -10,6 +10,7 @@
             <thead class="table-light">
                 <tr>
                     <th>ID</th>
+                    <th>Client Id</th>
                     <th>Company</th>
                     <th>First</th>
                     <th>Last</th>
@@ -47,6 +48,7 @@
                 <div class="modal-body">
                     <input type="hidden" name="id" id="adminId" />
                     <div class="row g-3">
+                        <div class="col-md-4"><input class="form-control" name="ClientId" placeholder="Client Id" required></div>
                         <div class="col-md-4"><input class="form-control" name="CompanyName" placeholder="Company Name" required></div>
                         <div class="col-md-4"><input class="form-control" name="FirstName" placeholder="First Name" required></div>
                         <div class="col-md-4"><input class="form-control" name="LastName" placeholder="Last Name" required></div>
@@ -95,6 +97,7 @@
         adminTable.innerHTML = data.map(admin => `
             <tr>
                 <td>${admin.id}</td>
+                <td>${admin.ClientId}</td>
                 <td>${admin.CompanyName}</td>
                 <td>${admin.FirstName}</td>
                 <td>${admin.LastName}</td>
