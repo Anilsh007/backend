@@ -6,7 +6,7 @@ const { pool } = require('../utils/db');
 router.post('/', async (req, res) => {
   try {
     const {
-      vendorcode, vendorcompanyname, Fname, Lname, Email,
+      ClientId, vendorcode, vendorcompanyname, Fname, Lname, Email,
       Address1, Address2, City, State, ZipCode,
       Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
       Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
@@ -22,16 +22,16 @@ router.post('/', async (req, res) => {
 
     const sql = `
       INSERT INTO vendorRegister (
-        vendorcode, vendorcompanyname, Fname, Lname, Email,
+        ClientId, vendorcode, vendorcompanyname, Fname, Lname, Email,
         Address1, Address2, City, State, ZipCode,
         Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
         Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
         Phone, Mobile, Sbclass, Class, UserId, Password,
         SecQuestion, SecAnswer, Aboutus, Type
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const values = [
-      vendorcode, vendorcompanyname, Fname, Lname, Email,
+      ClientId, vendorcode, vendorcompanyname, Fname, Lname, Email,
       Address1, Address2, City, State, ZipCode,
       Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
       Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
@@ -63,7 +63,7 @@ router.put('/:id', async (req, res) => {
   try {
     const id = req.params.id;
     const {
-      vendorcode, vendorcompanyname, Fname, Lname, Email,
+      ClientId, vendorcode, vendorcompanyname, Fname, Lname, Email,
       Address1, Address2, City, State, ZipCode,
       Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
       Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
@@ -73,7 +73,7 @@ router.put('/:id', async (req, res) => {
 
     const sql = `
       UPDATE vendorRegister SET
-        vendorcode = ?, vendorcompanyname = ?, Fname = ?, Lname = ?, Email = ?,
+        ClientId=?, vendorcode = ?, vendorcompanyname = ?, Fname = ?, Lname = ?, Email = ?,
         Address1 = ?, Address2 = ?, City = ?, State = ?, ZipCode = ?,
         Samuin = ?, Fein = ?, Duns = ?, Naics1 = ?, Naics2 = ?, Naics3 = ?, Naics4 = ?, Naics5 = ?,
         Nigp1 = ?, Nigp2 = ?, Nigp3 = ?, Nigp4 = ?, Nigp5 = ?,
@@ -82,7 +82,7 @@ router.put('/:id', async (req, res) => {
       WHERE id = ?
     `;
     const values = [
-      vendorcode, vendorcompanyname, Fname, Lname, Email,
+      ClientId, vendorcode, vendorcompanyname, Fname, Lname, Email,
       Address1, Address2, City, State, ZipCode,
       Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
       Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,

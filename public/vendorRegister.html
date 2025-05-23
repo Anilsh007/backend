@@ -8,6 +8,7 @@
         <thead class="table-dark">
             <tr>
                 <th>ID</th>
+                <th>ClientId</th>
                 <th>Vendor Code</th>
                 <th>Company</th>
                 <th>First Name</th>
@@ -60,6 +61,11 @@
                     <!-- Added name="id" here -->
                     <input type="hidden" name="id" id="id">
                     <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">ClientId</label>
+                            <input type="text" class="form-control" name="ClientId" required>
+                        </div>
+
                         <div class="col-md-4">
                             <label class="form-label">Vendor Code</label>
                             <input type="text" class="form-control" name="vendorcode" required>
@@ -227,6 +233,7 @@
             tbody.innerHTML = vendorsCache.map(v => `
                 <tr>
                     <td>${v.id}</td>
+                    <td>${v.ClientId}</td>
                     <td>${v.vendorcode}</td>
                     <td>${v.vendorcompanyname}</td>
                     <td>${v.Fname}</td>
