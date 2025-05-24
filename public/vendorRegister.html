@@ -8,6 +8,7 @@
         <thead class="table-dark">
             <tr>
                 <th>ID</th>
+                <th>Date & Time</th>
                 <th>ClientId</th>
                 <th>Vendor Code</th>
                 <th>Company</th>
@@ -61,6 +62,11 @@
                     <!-- Added name="id" here -->
                     <input type="hidden" name="id" id="id">
                     <div class="row g-3">
+
+                        <div class="col-md-4">
+                            <label class="form-label">Date & Time</label>
+                            <input type="text" class="form-control" id="DateTime" name="DateTime" readonly>
+                        </div>
                         <div class="col-md-4">
                             <label class="form-label">ClientId</label>
                             <input type="text" class="form-control" name="ClientId" required>
@@ -233,6 +239,7 @@
             tbody.innerHTML = vendorsCache.map(v => `
                 <tr>
                     <td>${v.id}</td>
+                    <td>${v.DateTime}</td>
                     <td>${v.ClientId}</td>
                     <td>${v.vendorcode}</td>
                     <td>${v.vendorcompanyname}</td>
@@ -279,10 +286,18 @@
         }
     }
 
+    function formatDateTime() {
+        const now = new Date();
+        const pad = n => n.toString().padStart(2, '0');
+        return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ` +
+            `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    }
+
     function resetForm() {
         const form = document.getElementById('vendorForm');
         form.reset();
         form.elements['id'].value = '';
+        document.getElementById('DateTime').value = formatDateTime();
     }
 
     function editVendor(data) {

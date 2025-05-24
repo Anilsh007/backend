@@ -3,6 +3,7 @@ const router = express.Router();
 const { pool } = require('../utils/db');
 
 // CREATE vendor with duplicate email check
+// CREATE vendor with duplicate email check
 router.post('/', async (req, res) => {
   try {
     const {
@@ -11,7 +12,7 @@ router.post('/', async (req, res) => {
       Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
       Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
       Phone, Mobile, Sbclass, Class, UserId, Password,
-      SecQuestion, SecAnswer, Aboutus, Type
+      SecQuestion, SecAnswer, Aboutus, Type, DateTime
     } = req.body;
 
     // Check for duplicate email
@@ -27,16 +28,17 @@ router.post('/', async (req, res) => {
         Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
         Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
         Phone, Mobile, Sbclass, Class, UserId, Password,
-        SecQuestion, SecAnswer, Aboutus, Type
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        SecQuestion, SecAnswer, Aboutus, Type, DateTime
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
+
     const values = [
       ClientId, vendorcode, vendorcompanyname, Fname, Lname, Email,
       Address1, Address2, City, State, ZipCode,
       Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
       Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
       Phone, Mobile, Sbclass, Class, UserId, Password,
-      SecQuestion, SecAnswer, Aboutus, Type
+      SecQuestion, SecAnswer, Aboutus, Type, DateTime
     ];
 
     await pool.query(sql, values);
@@ -46,6 +48,7 @@ router.post('/', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 // READ all vendors
 router.get('/', async (req, res) => {
@@ -68,7 +71,7 @@ router.put('/:id', async (req, res) => {
       Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
       Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
       Phone, Mobile, Sbclass, Class, UserId, Password,
-      SecQuestion, SecAnswer, Aboutus, Type
+      SecQuestion, SecAnswer, Aboutus, Type, DateTime
     } = req.body;
 
     const sql = `
@@ -78,7 +81,7 @@ router.put('/:id', async (req, res) => {
         Samuin = ?, Fein = ?, Duns = ?, Naics1 = ?, Naics2 = ?, Naics3 = ?, Naics4 = ?, Naics5 = ?,
         Nigp1 = ?, Nigp2 = ?, Nigp3 = ?, Nigp4 = ?, Nigp5 = ?,
         Phone = ?, Mobile = ?, Sbclass = ?, Class = ?, UserId = ?, Password = ?,
-        SecQuestion = ?, SecAnswer = ?, Aboutus = ?, Type = ?
+        SecQuestion = ?, SecAnswer = ?, Aboutus = ?, Type = ?, DateTime = ?
       WHERE id = ?
     `;
     const values = [
@@ -87,8 +90,7 @@ router.put('/:id', async (req, res) => {
       Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
       Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
       Phone, Mobile, Sbclass, Class, UserId, Password,
-      SecQuestion, SecAnswer, Aboutus, Type,
-      id
+      SecQuestion, SecAnswer, Aboutus, Type, DateTime, id
     ];
 
     await pool.query(sql, values);
