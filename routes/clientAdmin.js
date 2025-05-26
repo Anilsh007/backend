@@ -174,4 +174,40 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+
+// Simple Login (email + password)
+/** ---------------------------
+ * @route   POST /api/admin/login
+ * @desc    Login admin with AdminEmail and Password
+ * --------------------------- */
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required' });
+  }
+
+  try {
+    const [rows] = await pool.execute(
+      'SELECT * FROM clientAdmin WHERE AdminEmail = ? AND Password = ? LIMIT 1',
+      [email, password]
+    );
+
+    if (rows.length === 0) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    res.status(200).json({
+      message: 'Login successful',
+      user: rows[0], // optional
+      token: 'dummy-token' // optional, for testing
+    });
+  } catch (err) {
+    console.error('❌ Login error:', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
+
 module.exports = router;

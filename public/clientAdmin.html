@@ -1,4 +1,14 @@
 <div class="container-fluid py-5">
+
+    <h2>Login</h2>
+    <div id="loginMessage" class="alert d-none"></div>
+    <form id="loginForm">
+        <input type="text" id="loginEmail" placeholder="Email" required class="form-control mb-3" />
+        <input type="password" id="loginPassword" placeholder="Password" required class="form-control mb-3" />
+        <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+
+    <hr />
     <h2 class="mb-4">Admin Management</h2>
 
     <div id="message" class="alert d-none"></div>
@@ -204,6 +214,42 @@
         adminForm.reset();
         document.getElementById('adminId').value = '';
     });
+
+    const loginForm = document.getElementById('loginForm');
+    const loginMessage = document.getElementById('loginMessage');
+
+    function showLoginMessage(type, text) {
+        loginMessage.className = `alert alert-${type}`;
+        loginMessage.textContent = text;
+        loginMessage.classList.remove('d-none');
+        setTimeout(() => loginMessage.classList.add('d-none'), 3000);
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        const res = await fetch('/api/client-admins/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            showLoginMessage('success', 'Login successful! Redirecting...');
+            // Save token or user info to localStorage/sessionStorage if needed
+            localStorage.setItem('token', data.token); // assuming backend returns a token
+            // Redirect to Admin Management page or dashboard
+            setTimeout(() => window.alert("Login ho gya"));
+        } else {
+            showLoginMessage('danger', data.message || 'Login failed. Please check your credentials.');
+        }
+    });
+
 
     loadAdmins();
 </script>
