@@ -1,4 +1,13 @@
 <h2>Vendor Management</h2>
+
+<h2>Login</h2>
+<div id="vendorLoginMessage" class="alert d-none"></div>
+<form id="vendorLoginForm">
+    <input type="text" id="vendorLoginEmail" placeholder="Email" required class="form-control mb-3" />
+    <input type="password" id="vendorLoginPassword" placeholder="Password" required class="form-control mb-3" />
+    <button type="submit" class="btn btn-primary">Login</button>
+</form>
+
 <button class="btn btn-primary mb-5" data-bs-toggle="modal" data-bs-target="#vendorModal" onclick="resetForm()">Add
     Vendor</button>
 
@@ -362,6 +371,43 @@
             showMessage('danger', 'Error saving vendor');
         }
     });
+
+    const vendorLoginForm = document.getElementById('vendorLoginForm');
+    const vendorLoginMessage = document.getElementById('vendorLoginMessage');
+
+    function showLoginMessage(type, text) {
+        vendorLoginMessage.className = `alert alert-${type}`;
+        vendorLoginMessage.textContent = text;
+        vendorLoginMessage.classList.remove('d-none');
+        setTimeout(() => vendorLoginMessage.classList.add('d-none'), 3000);
+    }
+
+    vendorLoginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById('vendorLoginEmail').value;
+        const password = document.getElementById('vendorLoginPassword').value;
+
+        const res = await fetch('/api/vendors/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            showLoginMessage('success', 'Login successful! Redirecting...');
+            // Save token or user info to localStorage/sessionStorage if needed
+            localStorage.setItem('token', data.token); // assuming backend returns a token
+            // Redirect to Admin Management page or dashboard
+            setTimeout(() => window.alert("Login ho gya"));
+        } else {
+            showLoginMessage('danger', data.message || 'Login failed. Please check your credentials.');
+        }
+    });
+
+
 
     // Load vendors initially
     fetchVendors();

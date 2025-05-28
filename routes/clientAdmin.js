@@ -177,7 +177,7 @@ router.delete('/:id', async (req, res) => {
 
 // Simple Login (email + password)
 /** ---------------------------
- * @route   POST /api/admin/login
+ * @route   POST //api/client-admins/login
  * @desc    Login admin with AdminEmail and Password
  * --------------------------- */
 router.post('/login', async (req, res) => {

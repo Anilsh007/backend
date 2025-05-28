@@ -3,7 +3,6 @@ const router = express.Router();
 const { pool } = require('../utils/db');
 
 // CREATE vendor with duplicate email check
-// CREATE vendor with duplicate email check
 router.post('/', async (req, res) => {
   try {
     const {
@@ -49,7 +48,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-
 // READ all vendors
 router.get('/', async (req, res) => {
   try {
@@ -61,7 +59,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// UPDATE vendor
+// UPDATE vendor by ID
 router.put('/:id', async (req, res) => {
   try {
     const id = req.params.id;
@@ -76,14 +74,15 @@ router.put('/:id', async (req, res) => {
 
     const sql = `
       UPDATE vendorRegister SET
-        ClientId=?, vendorcode = ?, vendorcompanyname = ?, Fname = ?, Lname = ?, Email = ?,
-        Address1 = ?, Address2 = ?, City = ?, State = ?, ZipCode = ?,
-        Samuin = ?, Fein = ?, Duns = ?, Naics1 = ?, Naics2 = ?, Naics3 = ?, Naics4 = ?, Naics5 = ?,
-        Nigp1 = ?, Nigp2 = ?, Nigp3 = ?, Nigp4 = ?, Nigp5 = ?,
-        Phone = ?, Mobile = ?, Sbclass = ?, Class = ?, UserId = ?, Password = ?,
-        SecQuestion = ?, SecAnswer = ?, Aboutus = ?, Type = ?, DateTime = ?
+        ClientId=?, vendorcode=?, vendorcompanyname=?, Fname=?, Lname=?, Email=?,
+        Address1=?, Address2=?, City=?, State=?, ZipCode=?,
+        Samuin=?, Fein=?, Duns=?, Naics1=?, Naics2=?, Naics3=?, Naics4=?, Naics5=?,
+        Nigp1=?, Nigp2=?, Nigp3=?, Nigp4=?, Nigp5=?,
+        Phone=?, Mobile=?, Sbclass=?, Class=?, UserId=?, Password=?,
+        SecQuestion=?, SecAnswer=?, Aboutus=?, Type=?, DateTime=?
       WHERE id = ?
     `;
+
     const values = [
       ClientId, vendorcode, vendorcompanyname, Fname, Lname, Email,
       Address1, Address2, City, State, ZipCode,
@@ -101,7 +100,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE vendor
+// DELETE vendor by ID
 router.delete('/:id', async (req, res) => {
   try {
     const id = req.params.id;
@@ -110,6 +109,39 @@ router.delete('/:id', async (req, res) => {
   } catch (err) {
     console.error('Delete Error:', err);
     res.status(500).json({ error: 'Failed to delete vendor' });
+  }
+});
+
+// Vendor Login (email + password)
+/**
+ * @route   POST /api/vendors/login
+ * @desc    Login vendor with Email and Password
+ */
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required' });
+  }
+
+  try {
+    const [rows] = await pool.execute(
+      'SELECT * FROM vendorRegister WHERE Email = ? AND Password = ? LIMIT 1',
+      [email, password]
+    );
+
+    if (rows.length === 0) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    res.status(200).json({
+      message: 'Login successful',
+      user: rows[0],
+      token: 'dummy-token' // placeholder
+    });
+  } catch (err) {
+    console.error('Login Error:', err);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
