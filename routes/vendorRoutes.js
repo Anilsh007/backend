@@ -112,6 +112,23 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+
+// GET vendor by vendorcode
+router.get('/:vendorcode', async (req, res) => {
+  const vendorcode = req.params.vendorcode;
+  try {
+    const [rows] = await pool.query('SELECT * FROM vendorRegister WHERE vendorcode = ?', [vendorcode]);
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Vendor not found' });
+    }
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('Fetch by vendorcode error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 // Vendor Login (email + password)
 /**
  * @route   POST /api/vendors/login
