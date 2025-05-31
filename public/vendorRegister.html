@@ -52,6 +52,8 @@
                 <th>SecAnswer</th>
                 <th>Aboutus</th>
                 <th>Type</th>
+                <th>profileImage</th>
+                <th>docx</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -211,6 +213,19 @@
                             <textarea class="form-control" name="Aboutus"></textarea>
                         </div>
                         <div class="col-md-4">
+                            <label class="form-label">Profile Image</label>
+                            <input class="form-control" name="profileImage" id="profileImage" type="file"
+                                accept="image/*" onchange="previewImage(event)">
+                            <img id="previewImage" src="" alt="" style="width: 60px; height: 60px; margin-top: 5px;" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Document</label>
+                            <input class="form-control" name="docx" id="docx" type="file" accept=".doc,.docx"
+                                onchange="document.getElementById('docxFileName').textContent = this.files[0].name;">
+                            <span id="docxFileName"></span>
+                        </div>
+
+                        <div class="col-md-4">
                             <label class="form-label">Type</label>
                             <select class="form-select" name="Type">
                                 <option value="2" selected>Type 2</option>
@@ -284,6 +299,13 @@
                     <td>${v.Aboutus || ''}</td>
                     <td>${v.Type || ''}</td>
                     <td>
+                        ${v.profileImage ? `<img src="/uploads/${v.profileImage}" style="width: 50px; height: 50px; object-fit: cover;">` : ''}
+                    </td>
+                    <td>
+                        ${v.docx ? `<a href="/uploads/${v.docx}" target="_blank">View Doc</a>` : ''}
+                    </td>
+
+                    <td>
                         <button class="btn btn-sm btn-primary" onclick='editVendor(${JSON.stringify(v).replace(/'/g, "\\'")})'>Edit</button>
                         <button class="btn btn-sm btn-danger" onclick='deleteVendor(${v.id})'>Delete</button>
                     </td>
@@ -307,7 +329,18 @@
         form.reset();
         form.elements['id'].value = '';
         document.getElementById('DateTime').value = formatDateTime();
+        document.getElementById('previewImage').src = '';
+        document.getElementById('docxFileName').textContent = '';
+
+        const profileImageInput = document.getElementById('profileImage');
+        profileImageInput.value = '';
+        profileImageInput.dispatchEvent(new Event('change'));
+
+        const docxInput = document.getElementById('docx');
+        docxInput.value = '';
+        docxInput.dispatchEvent(new Event('change'));
     }
+
 
     function editVendor(data) {
         const form = document.getElementById('vendorForm');
@@ -339,16 +372,20 @@
         const form = e.target;
         const formData = new FormData(form);
         const id = formData.get('id');
-        const email = formData.get('Email').trim().toLowerCase();
 
-        const emailExists = vendorsCache.some(v => v.Email && v.Email.toLowerCase() === email && v.id != id);
+        const email = formData.get('Email')?.trim().toLowerCase();
+        if (!email) {
+            showMessage('danger', 'Email is required.');
+            return;
+        }
+
+        const emailExists = vendorsCache.some(v => v.Email?.toLowerCase() === email && v.id != id);
         if (emailExists) {
             showMessage('danger', 'This email already exists. Please use a different email.');
             return;
         }
 
-        const data = Object.fromEntries(formData.entries());
-        data.Email = email;
+        formData.set('Email', email); // set lowercase email
 
         const method = id ? 'PUT' : 'POST';
         const url = id ? `${API_URL}/${id}` : API_URL;
@@ -356,11 +393,12 @@
         try {
             const res = await fetch(url, {
                 method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: formData
             });
-            const responseData = await res.json();
-            showMessage(res.ok ? 'success' : 'danger', responseData.message || 'Operation completed');
+
+            const result = await res.json();
+            showMessage(res.ok ? 'success' : 'danger', result.message || 'Saved');
+
             if (res.ok) {
                 bootstrap.Modal.getInstance(document.getElementById('vendorModal')).hide();
                 fetchVendors();
@@ -371,6 +409,7 @@
             showMessage('danger', 'Error saving vendor');
         }
     });
+
 
     const vendorLoginForm = document.getElementById('vendorLoginForm');
     const vendorLoginMessage = document.getElementById('vendorLoginMessage');

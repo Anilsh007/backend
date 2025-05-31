@@ -1,5 +1,4 @@
 <div class="container-fluid py-5">
-
     <h2>Login</h2>
     <div id="loginMessage" class="alert d-none"></div>
     <form id="loginForm">
@@ -10,15 +9,12 @@
 
     <hr />
     <h2 class="mb-4">Admin Management</h2>
-
     <div id="message" class="alert d-none"></div>
-
     <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#adminModal">Add Admin</button>
 
     <div class="mb-3">
         <input type="text" id="searchClientId" class="form-control" placeholder="Search by Client ID">
     </div>
-
 
     <div class="table-responsive">
         <table class="table table-bordered table-striped" id="adminTable">
@@ -43,6 +39,9 @@
                     <th>About</th>
                     <th>License Qty</th>
                     <th>Type</th>
+                    <th>companylogo</th>
+                    <th>baner</th>
+                    <th>profileImage</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -54,8 +53,8 @@
 <!-- Modal Form -->
 <div class="modal fade" id="adminModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
-        <div class="modal-content">
-            <form id="adminForm">
+        <div class="modal-content overflow-auto">
+            <form id="adminForm" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title">Admin Form</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -75,17 +74,18 @@
                                 required></div>
                         <div class="col-md-4"><input class="form-control" name="Address1" placeholder="Address 1"
                                 required></div>
-                        <div class="col-md-4"><input class="form-control" name="Address2" placeholder="Address 2"
-                                required></div>
-                        <div class="col-md-4"><input class="form-control" name="City" placeholder="City" required></div>
+                        <div class="col-md-4"><input class="form-control" name="Address2" placeholder="Address 2">
+                        </div>
+                        <div class="col-md-4"><input class="form-control" name="City" placeholder="City" required>
+                        </div>
                         <div class="col-md-4"><input class="form-control" name="State" placeholder="State" required>
                         </div>
                         <div class="col-md-4"><input class="form-control" name="ZipCode" placeholder="Zip Code"
                                 type="number" required></div>
-                        <div class="col-md-4"><input class="form-control" name="Phone" placeholder="Phone" type="text"
-                                required></div>
-                        <div class="col-md-4"><input class="form-control" name="Mobile" placeholder="Mobile" type="text"
-                                required></div>
+                        <div class="col-md-4"><input class="form-control" name="Phone" placeholder="Phone" required>
+                        </div>
+                        <div class="col-md-4"><input class="form-control" name="Mobile" placeholder="Mobile" required>
+                        </div>
                         <div class="col-md-4"><input class="form-control" name="Password" placeholder="Password"
                                 required></div>
                         <div class="col-md-4"><input class="form-control" name="Question"
@@ -98,6 +98,21 @@
                                 type="number" required></div>
                         <div class="col-md-4"><input class="form-control" name="Type" placeholder="Type" type="number"
                                 required></div>
+                        <div class="col-md-4">
+                            <input class="form-control" name="companylogo" id="companylogo" type="file"
+                                accept="image/*">
+                            <img id="previewLogo" src="" alt="" style="width: 60px; height: 60px; margin-top: 5px;" />
+                        </div>
+                        <div class="col-md-4">
+                            <input class="form-control" name="baner" id="baner" type="file"
+                                accept="image/*">
+                            <img id="previewBaner" src="" alt="" style="width: 60px; height: 60px; margin-top: 5px;" />
+                        </div>
+                        <div class="col-md-4">
+                            <input class="form-control" name="profileImage" id="profileImage" type="file"
+                                accept="image/*">
+                            <img id="previewImage" src="" alt="" style="width: 60px; height: 60px; margin-top: 5px;" />
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -110,7 +125,7 @@
 </div>
 
 <script>
-    const apiUrl = '/api/client-admins'; // Update to match backend route
+    const apiUrl = '/api/client-admins';
     const adminForm = document.getElementById('adminForm');
     const message = document.getElementById('message');
     const adminTable = document.querySelector('#adminTable tbody');
@@ -126,11 +141,9 @@
     async function loadAdmins(searchValue = '') {
         const res = await fetch(apiUrl);
         const data = await res.json();
-        const filteredData = searchValue
-            ? data.filter(admin => admin.ClientId.toLowerCase().includes(searchValue.toLowerCase()))
-            : data;
+        const filtered = searchValue ? data.filter(a => a.ClientId.toLowerCase().includes(searchValue.toLowerCase())) : data;
 
-        adminTable.innerHTML = filteredData.map(admin => `
+        adminTable.innerHTML = filtered.map(admin => `
         <tr>
             <td>${admin.id}</td>
             <td>${admin.ClientId}</td>
@@ -152,53 +165,59 @@
             <td>${admin.LicenseQty}</td>
             <td>${admin.Type}</td>
             <td>
+                <img src="/uploads${admin.companylogo}" alt="Logo" style="width: 50px; height: 50px; object-fit: cover;">
+            </td>
+            <td>
+                <img src="/uploads${admin.baner}" alt="Banner" style="width: 50px; height: 50px; object-fit: cover;">
+            </td>
+            <td>
+                <img src="/uploads${admin.profileImage}" alt="Profile Image" style="width: 50px; height: 50px; object-fit: cover;">
+            <td>
                 <button class="btn btn-sm btn-warning" onclick="editAdmin(${admin.id})">Edit</button>
                 <button class="btn btn-sm btn-danger" onclick="deleteAdmin(${admin.id})">Delete</button>
             </td>
         </tr>
-    `).join('');
+      `).join('');
     }
+
     document.getElementById('searchClientId').addEventListener('input', e => {
         loadAdmins(e.target.value);
     });
-
 
     adminForm.addEventListener('submit', async e => {
         e.preventDefault();
         const formData = new FormData(adminForm);
         const id = formData.get('id');
+        const file = formData.get('profileImage');
+
+        console.log('Submitting form with profileImage:', file && file.name); // ✅ DEBUG
+
         const method = id ? 'PUT' : 'POST';
         const endpoint = id ? `${apiUrl}/${id}` : apiUrl;
 
-        const jsonData = {};
-        formData.forEach((value, key) => {
-            jsonData[key] = value;
-        });
-
-        const res = await fetch(endpoint, {
-            method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(jsonData)
-        });
-
+        const res = await fetch(endpoint, { method, body: formData });
         const data = await res.json();
+
         showMessage(res.ok ? 'success' : 'danger', data.message);
         if (res.ok) {
             adminForm.reset();
+            document.getElementById('previewImage').src = '';
             modal.hide();
             loadAdmins();
         }
     });
 
+
     window.editAdmin = async function (id) {
         const res = await fetch(`${apiUrl}/${id}`);
         const data = await res.json();
         for (const key in data) {
-            if (adminForm[key]) {
+            if (adminForm[key] && key !== 'profileImage') {
                 adminForm[key].value = data[key];
             }
         }
         document.getElementById('adminId').value = id;
+        document.getElementById('previewImage').src = data.profileImage;
         modal.show();
     };
 
@@ -213,8 +232,10 @@
     document.getElementById('adminModal').addEventListener('hidden.bs.modal', () => {
         adminForm.reset();
         document.getElementById('adminId').value = '';
+        document.getElementById('previewImage').src = '';
     });
 
+    // Login
     const loginForm = document.getElementById('loginForm');
     const loginMessage = document.getElementById('loginMessage');
 
@@ -227,7 +248,6 @@
 
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
 
@@ -238,18 +258,14 @@
         });
 
         const data = await res.json();
-
         if (res.ok) {
             showLoginMessage('success', 'Login successful! Redirecting...');
-            // Save token or user info to localStorage/sessionStorage if needed
-            localStorage.setItem('token', data.token); // assuming backend returns a token
-            // Redirect to Admin Management page or dashboard
-            setTimeout(() => window.alert("Login ho gya"));
+            localStorage.setItem('token', data.token);
+            setTimeout(() => window.alert("Login successful!"), 1000);
         } else {
-            showLoginMessage('danger', data.message || 'Login failed. Please check your credentials.');
+            showLoginMessage('danger', data.message || 'Login failed.');
         }
     });
-
 
     loadAdmins();
 </script>

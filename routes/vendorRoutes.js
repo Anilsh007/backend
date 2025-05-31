@@ -1,9 +1,50 @@
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../utils/db');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const fsPromises = require('fs').promises;
 
-// CREATE vendor with duplicate email check
-router.post('/', async (req, res) => {
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: async function (req, file, cb) {
+    const clientId = req.body.ClientId;
+    const vendorcode = req.body.vendorcode;
+
+    if (!clientId || !vendorcode) return cb(new Error('ClientId and vendorcode are required'));
+
+    const dir = path.join(__dirname, '..', 'uploads', clientId, vendorcode);
+
+    try {
+      await fsPromises.mkdir(dir, { recursive: true }); // ensures nested folder exists
+      cb(null, dir);
+    } catch (err) {
+      cb(err);
+    }
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    const filename = `${file.fieldname}-${Date.now()}${ext}`;
+    cb(null, filename);
+  }
+});
+
+
+const upload = multer({ storage });
+
+const multiUpload = upload.fields([
+  { name: 'profileImage', maxCount: 1 },
+  { name: 'docx', maxCount: 1 }
+]);
+
+// ✅ Safe relative upload path
+
+const getPath = (file) => file ? file[0].path.replace(path.join(__dirname, '..', 'uploads') + path.sep, '').replace(/\\/g, '/') : null;
+
+
+// ========================== CREATE ===============================
+router.post('/', multiUpload, async (req, res) => {
   try {
     const {
       ClientId, vendorcode, vendorcompanyname, Fname, Lname, Email,
@@ -14,7 +55,9 @@ router.post('/', async (req, res) => {
       SecQuestion, SecAnswer, Aboutus, Type, DateTime
     } = req.body;
 
-    // Check for duplicate email
+    const profileImage = getPath(req.files['profileImage']);
+    const docx = getPath(req.files['docx']);
+
     const [existing] = await pool.query('SELECT id FROM vendorRegister WHERE Email = ?', [Email]);
     if (existing.length > 0) {
       return res.status(400).json({ success: false, message: 'Email already registered.' });
@@ -27,8 +70,8 @@ router.post('/', async (req, res) => {
         Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
         Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
         Phone, Mobile, Sbclass, Class, UserId, Password,
-        SecQuestion, SecAnswer, Aboutus, Type, DateTime
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        SecQuestion, SecAnswer, Aboutus, Type, profileImage, docx, DateTime
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const values = [
@@ -37,7 +80,7 @@ router.post('/', async (req, res) => {
       Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
       Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
       Phone, Mobile, Sbclass, Class, UserId, Password,
-      SecQuestion, SecAnswer, Aboutus, Type, DateTime
+      SecQuestion, SecAnswer, Aboutus, Type, profileImage, docx, DateTime
     ];
 
     await pool.query(sql, values);
@@ -48,19 +91,36 @@ router.post('/', async (req, res) => {
   }
 });
 
-// READ all vendors
+// ========================== READ ALL ===============================
 router.get('/', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM vendorRegister');
     res.json(rows);
   } catch (err) {
-    console.error('Read All Error:', err);
-    res.status(500).json({ error: 'Failed to fetch vendors' });
+    console.error('Read All Error:', {
+      message: err.message,
+      code: err.code,
+      stack: err.stack,
+    });
+    res.status(500).json({ error: 'Failed to fetch vendors', details: err.message });
   }
 });
 
-// UPDATE vendor by ID
-router.put('/:id', async (req, res) => {
+
+// ========================== READ by VENDORCODE ===============================
+router.get('/:vendorcode', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM vendorRegister WHERE vendorcode = ?', [req.params.vendorcode]);
+    if (rows.length === 0) return res.status(404).json({ message: 'Vendor not found' });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('Fetch by vendorcode error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ========================== UPDATE ===============================
+router.put('/:id', multiUpload, async (req, res) => {
   try {
     const id = req.params.id;
     const {
@@ -72,27 +132,39 @@ router.put('/:id', async (req, res) => {
       SecQuestion, SecAnswer, Aboutus, Type, DateTime
     } = req.body;
 
-    const sql = `
-      UPDATE vendorRegister SET
-        ClientId=?, vendorcode=?, vendorcompanyname=?, Fname=?, Lname=?, Email=?,
-        Address1=?, Address2=?, City=?, State=?, ZipCode=?,
-        Samuin=?, Fein=?, Duns=?, Naics1=?, Naics2=?, Naics3=?, Naics4=?, Naics5=?,
-        Nigp1=?, Nigp2=?, Nigp3=?, Nigp4=?, Nigp5=?,
-        Phone=?, Mobile=?, Sbclass=?, Class=?, UserId=?, Password=?,
-        SecQuestion=?, SecAnswer=?, Aboutus=?, Type=?, DateTime=?
-      WHERE id = ?
-    `;
+    const profileImage = getPath(req.files['profileImage']);
+    const docx = getPath(req.files['docx']);
 
+    const updates = [
+      'ClientId = ?', 'vendorcode = ?', 'vendorcompanyname = ?', 'Fname = ?', 'Lname = ?', 'Email = ?',
+      'Address1 = ?', 'Address2 = ?', 'City = ?', 'State = ?', 'ZipCode = ?',
+      'Samuin = ?', 'Fein = ?', 'Duns = ?', 'Naics1 = ?', 'Naics2 = ?', 'Naics3 = ?', 'Naics4 = ?', 'Naics5 = ?',
+      'Nigp1 = ?', 'Nigp2 = ?', 'Nigp3 = ?', 'Nigp4 = ?', 'Nigp5 = ?',
+      'Phone = ?', 'Mobile = ?', 'Sbclass = ?', 'Class = ?', 'UserId = ?', 'Password = ?',
+      'SecQuestion = ?', 'SecAnswer = ?', 'Aboutus = ?', 'Type = ?', 'DateTime = ?'
+    ];
     const values = [
       ClientId, vendorcode, vendorcompanyname, Fname, Lname, Email,
       Address1, Address2, City, State, ZipCode,
       Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
       Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
       Phone, Mobile, Sbclass, Class, UserId, Password,
-      SecQuestion, SecAnswer, Aboutus, Type, DateTime, id
+      SecQuestion, SecAnswer, Aboutus, Type, DateTime
     ];
 
+    if (profileImage) {
+      updates.push('profileImage = ?');
+      values.push(profileImage);
+    }
+    if (docx) {
+      updates.push('docx = ?');
+      values.push(docx);
+    }
+
+    values.push(id);
+    const sql = `UPDATE vendorRegister SET ${updates.join(', ')} WHERE id = ?`;
     await pool.query(sql, values);
+
     res.json({ success: true, message: 'Vendor updated successfully.' });
   } catch (err) {
     console.error('Update Error:', err);
@@ -100,11 +172,10 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE vendor by ID
+// ========================== DELETE ===============================
 router.delete('/:id', async (req, res) => {
   try {
-    const id = req.params.id;
-    await pool.query('DELETE FROM vendorRegister WHERE id = ?', [id]);
+    await pool.query('DELETE FROM vendorRegister WHERE id = ?', [req.params.id]);
     res.json({ success: true, message: 'Vendor deleted successfully.' });
   } catch (err) {
     console.error('Delete Error:', err);
@@ -112,28 +183,7 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-
-// GET vendor by vendorcode
-router.get('/:vendorcode', async (req, res) => {
-  const vendorcode = req.params.vendorcode;
-  try {
-    const [rows] = await pool.query('SELECT * FROM vendorRegister WHERE vendorcode = ?', [vendorcode]);
-    if (rows.length === 0) {
-      return res.status(404).json({ message: 'Vendor not found' });
-    }
-    res.json(rows[0]);
-  } catch (err) {
-    console.error('Fetch by vendorcode error:', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-
-// Vendor Login (email + password)
-/**
- * @route   POST /api/vendors/login
- * @desc    Login vendor with Email and Password
- */
+// ========================== LOGIN ===============================
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -154,7 +204,7 @@ router.post('/login', async (req, res) => {
     res.status(200).json({
       message: 'Login successful',
       user: rows[0],
-      token: 'dummy-token' // placeholder
+      token: 'dummy-token' // Replace with JWT in production
     });
   } catch (err) {
     console.error('Login Error:', err);
