@@ -32,7 +32,13 @@ const storage = multer.diskStorage({
 });
 
 
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10 MB max per file (adjust as needed)
+  }
+});
+
 
 const multiUpload = upload.fields([
   { name: 'profileImage', maxCount: 1 },
@@ -109,7 +115,9 @@ router.post('/', multiUpload, async (req, res) => {
 router.put('/:id', multiUpload, async (req, res) => {
   const { id } = req.params;
   const {
-    ClientId, CompanyName, FirstName, LastName, AdminEmail, Address1, Address2, City, State, ZipCode, Phone, Mobile, Password, Question, Answer, AboutUs, LicenseQty, Type
+    ClientId, CompanyName, FirstName, LastName, AdminEmail, Address1, Address2,
+    City, State, ZipCode, Phone, Mobile, Password, Question, Answer,
+    AboutUs, LicenseQty, Type
   } = req.body;
 
   const getPath = (file) => file ? file[0].path.replace(/\\/g, '/').split('uploads')[1] : null;
@@ -117,7 +125,6 @@ router.put('/:id', multiUpload, async (req, res) => {
   const profileImage = getPath(req.files['profileImage']);
   const companylogo = getPath(req.files['companylogo']);
   const baner = getPath(req.files['baner']);
-
 
   try {
     const [existingMail] = await pool.execute(
@@ -136,21 +143,37 @@ router.put('/:id', multiUpload, async (req, res) => {
       return res.status(400).json({ message: 'ClientId already in use by another admin.' });
     }
 
-    const updateQuery = `
-      UPDATE clientAdmin SET
-        ClientId = ?, CompanyName = ?, FirstName = ?, LastName = ?, AdminEmail = ?, Address1 = ?, Address2 = ?, City = ?, State = ?, ZipCode = ?, Phone = ?, Mobile = ?, Password = ?, Question = ?, Answer = ?, AboutUs = ?, LicenseQty = ?, Type = ?
-        ${profileImage ? ', profileImage = ?' : ''}
-        ${companylogo ? ', companylogo = ?' : ''}
-        ${baner ? ', baner = ?' : ''}
-      WHERE id = ?`;
+    // Build dynamic query
+    let updateFields = `
+      ClientId = ?, CompanyName = ?, FirstName = ?, LastName = ?, AdminEmail = ?,
+      Address1 = ?, Address2 = ?, City = ?, State = ?, ZipCode = ?, Phone = ?, 
+      Mobile = ?, Password = ?, Question = ?, Answer = ?, AboutUs = ?, 
+      LicenseQty = ?, Type = ?
+    `;
 
     const params = [
-      ClientId, CompanyName, FirstName, LastName, AdminEmail, Address1, Address2, City, State, ZipCode, Phone, Mobile, Password, Question, Answer, AboutUs, LicenseQty, Type
+      ClientId, CompanyName, FirstName, LastName, AdminEmail,
+      Address1, Address2, City, State, ZipCode, Phone, Mobile,
+      Password, Question, Answer, AboutUs, LicenseQty, Type
     ];
 
-    if (profileImage) params.push(profileImage);
+    if (profileImage) {
+      updateFields += ', profileImage = ?';
+      params.push(profileImage);
+    }
+    if (companylogo) {
+      updateFields += ', companylogo = ?';
+      params.push(companylogo);
+    }
+    if (baner) {
+      updateFields += ', baner = ?';
+      params.push(baner);
+    }
+
+    updateFields += ' WHERE id = ?';
     params.push(id);
 
+    const updateQuery = `UPDATE clientAdmin SET ${updateFields}`;
     const [result] = await pool.execute(updateQuery, params);
 
     if (result.affectedRows === 0) {
@@ -163,6 +186,7 @@ router.put('/:id', multiUpload, async (req, res) => {
     res.status(500).json({ message: 'Internal server error.' });
   }
 });
+
 
 /**
  * GET /api/admin

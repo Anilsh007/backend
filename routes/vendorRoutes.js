@@ -31,7 +31,13 @@ const storage = multer.diskStorage({
 });
 
 
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10 MB max file size
+  }
+});
+
 
 const multiUpload = upload.fields([
   { name: 'profileImage', maxCount: 1 },
@@ -55,14 +61,25 @@ router.post('/', multiUpload, async (req, res) => {
       SecQuestion, SecAnswer, Aboutus, Type, DateTime
     } = req.body;
 
-    const profileImage = getPath(req.files['profileImage']);
-    const docx = getPath(req.files['docx']);
+    // Safely get file paths
+    const profileImage = getPath(req.files?.['profileImage']);
+    const docx = getPath(req.files?.['docx']);
 
-    const [existing] = await pool.query('SELECT id FROM vendorRegister WHERE Email = ?', [Email]);
+    // Validate required fields
+    if (!ClientId || !vendorcode || !Email) {
+      return res.status(400).json({ success: false, message: 'ClientId, vendorcode, and Email are required.' });
+    }
+
+    // Check for duplicate email
+    const [existing] = await pool.execute(
+      'SELECT id FROM vendorRegister WHERE Email = ?',
+      [Email]
+    );
     if (existing.length > 0) {
       return res.status(400).json({ success: false, message: 'Email already registered.' });
     }
 
+    // SQL and values
     const sql = `
       INSERT INTO vendorRegister (
         ClientId, vendorcode, vendorcompanyname, Fname, Lname, Email,
@@ -83,18 +100,38 @@ router.post('/', multiUpload, async (req, res) => {
       SecQuestion, SecAnswer, Aboutus, Type, profileImage, docx, DateTime
     ];
 
-    await pool.query(sql, values);
+    if (values.length !== 37) {
+      console.error('❌ Incorrect number of values in INSERT:', values.length);
+      return res.status(500).json({ error: 'Server config error: expected 37 fields.' });
+    }
+
+    // Execute insert
+    await pool.execute(sql, values);
+
     res.json({ success: true, message: 'Vendor added successfully.' });
+
   } catch (err) {
-    console.error('Create Error:', err);
+    console.error('❌ Create Error:', {
+      message: err.message,
+      code: err.code,
+      stack: err.stack
+    });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
+
 // ========================== READ ALL ===============================
+// Replace the current GET /
 router.get('/', async (req, res) => {
+  const { page = 1, limit = 50 } = req.query; // Defaults to page 1, 50 records
+  const offset = (page - 1) * limit;
+
   try {
-    const [rows] = await pool.query('SELECT * FROM vendorRegister');
+    const [rows] = await pool.query(
+      'SELECT * FROM vendorRegister LIMIT ? OFFSET ?',
+      [parseInt(limit), parseInt(offset)]
+    );
     res.json(rows);
   } catch (err) {
     console.error('Read All Error:', {
@@ -105,6 +142,7 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch vendors', details: err.message });
   }
 });
+
 
 
 // ========================== READ by VENDORCODE ===============================
