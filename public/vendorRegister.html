@@ -5,7 +5,7 @@
 <form id="vendorLoginForm">
     <input type="text" id="vendorLoginEmail" placeholder="Email" required class="form-control mb-3" />
     <input type="password" id="vendorLoginPassword" placeholder="Password" required class="form-control mb-3" />
-    <button type="submit" class="btn btn-primary">Login</button>
+    <button type="submit" class="btn btn-primary mb-5">Login</button>
 </form>
 
 <button class="btn btn-primary mb-5" data-bs-toggle="modal" data-bs-target="#vendorModal" onclick="resetForm()">Add
@@ -346,12 +346,23 @@
         const form = document.getElementById('vendorForm');
         for (const key in data) {
             const input = form.elements[key];
-            if (input) {
+            if (input && input.type !== 'file') {
                 input.value = data[key] || '';
             }
         }
+
+        // Optionally show previews
+        if (data.profileImage) {
+            document.getElementById('previewImage').src = `/uploads/${data.profileImage}`;
+        }
+
+        if (data.docx) {
+            document.getElementById('docxFileName').textContent = data.docx.split('/').pop();
+        }
+
         new bootstrap.Modal(document.getElementById('vendorModal')).show();
     }
+
 
     async function deleteVendor(id) {
         if (confirm('Are you sure you want to delete this vendor?')) {

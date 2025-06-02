@@ -24,18 +24,18 @@ const storage = multer.diskStorage({
 
   filename: function (req, file, cb) {
     const fieldName = file.fieldname; // e.g., 'profileImage'
-    const timestamp = Date.now();
     const ext = path.extname(file.originalname); // e.g., '.jpg'
-    const filename = `${fieldName}-${timestamp}${ext}`;
+    const filename = `${fieldName}${ext}`; // just fieldName + extension, no timestamp
     cb(null, filename);
   }
+
 });
 
 
 const upload = multer({
   storage,
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10 MB max per file (adjust as needed)
+    fileSize: 20 * 1024 * 1024 // 20 MB max per file (adjust as needed)
   }
 });
 
