@@ -111,9 +111,9 @@
                         </div>
                         <div class="col-md-4">
                             <label for="profileImage">Profile Image</label>
-                            <input class="form-control" name="profileImage" id="profileImage" type="file"
+                            <input class="form-control" name="profileImage" id="adminprofileImage" type="file"
                                 accept="image/*">
-                            <img id="previewImage" src="" alt="" style="width: 60px; height: 60px; margin-top: 5px;" />
+                            <img id="adminpreviewImage" src="" alt="" style="width: 60px; height: 60px; margin-top: 5px;" />
                         </div>
                     </div>
                 </div>
@@ -127,7 +127,7 @@
 </div>
 
 <script>
-    const apiUrl = '/api/client-admins';
+    const clientAdmin_API = '/api/client-admins';
     const adminForm = document.getElementById('adminForm');
     const message = document.getElementById('message');
     const adminTable = document.querySelector('#adminTable tbody');
@@ -141,7 +141,7 @@
     }
 
     async function loadAdmins(searchValue = '') {
-        const res = await fetch(apiUrl);
+        const res = await fetch(clientAdmin_API);
         const data = await res.json();
         const filtered = searchValue ? data.filter(a => a.ClientId.toLowerCase().includes(searchValue.toLowerCase())) : data;
 
@@ -196,7 +196,7 @@
         console.log('Submitting form with profileImage:', file && file.name); // ✅ DEBUG
 
         const method = id ? 'PUT' : 'POST';
-        const endpoint = id ? `${apiUrl}/${id}` : apiUrl;
+        const endpoint = id ? `${clientAdmin_API}/${id}` : clientAdmin_API;
 
         const res = await fetch(endpoint, { method, body: formData });
         const data = await res.json();
@@ -204,7 +204,7 @@
         showMessage(res.ok ? 'success' : 'danger', data.message);
         if (res.ok) {
             adminForm.reset();
-            document.getElementById('previewImage').src = '';
+            document.getElementById('adminpreviewImage').src = '';
             modal.hide();
             loadAdmins();
         }
@@ -212,7 +212,7 @@
 
 
     window.editAdmin = async function (id) {
-        const res = await fetch(`${apiUrl}/${id}`);
+        const res = await fetch(`${clientAdmin_API}/${id}`);
         const data = await res.json();
 
         for (const key in data) {
@@ -225,7 +225,7 @@
 
         // Show previews (but don't try to set input file values)
         if (data.profileImage) {
-            document.getElementById('previewImage').src = `/uploads${data.profileImage}`;
+            document.getElementById('adminpreviewImage').src = `/uploads${data.profileImage}`;
         }
         if (data.companylogo) {
             document.getElementById('previewLogo').src = `/uploads${data.companylogo}`;
@@ -240,7 +240,7 @@
 
     window.deleteAdmin = async function (id) {
         if (!confirm('Are you sure you want to delete this admin?')) return;
-        const res = await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
+        const res = await fetch(`${clientAdmin_API}/${id}`, { method: 'DELETE' });
         const data = await res.json();
         showMessage(res.ok ? 'success' : 'danger', data.message);
         if (res.ok) loadAdmins();
@@ -249,7 +249,7 @@
     document.getElementById('adminModal').addEventListener('hidden.bs.modal', () => {
         adminForm.reset();
         document.getElementById('adminId').value = '';
-        document.getElementById('previewImage').src = '';
+        document.getElementById('adminpreviewImage').src = '';
     });
 
     // Login

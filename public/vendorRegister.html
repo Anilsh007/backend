@@ -245,7 +245,7 @@
 </div>
 
 <script>
-    const API_URL = '/api/vendors';
+    const vendor_API = '/api/vendors';
     let vendorsCache = [];
 
     function showMessage(type, message) {
@@ -258,7 +258,7 @@
 
     async function fetchVendors() {
         try {
-            const res = await fetch(API_URL);
+            const res = await fetch(vendor_API);
             if (!res.ok) throw new Error('Failed to fetch vendors');
             vendorsCache = await res.json();
             const tbody = document.querySelector('#vendorTable tbody');
@@ -369,7 +369,7 @@
     async function deleteVendor(id) {
         if (confirm('Are you sure you want to delete this vendor?')) {
             try {
-                const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                const res = await fetch(`${vendor_API}/${id}`, { method: 'DELETE' });
                 const data = await res.json();
                 showMessage(res.ok ? 'success' : 'danger', data.message || 'Operation completed');
                 fetchVendors();
@@ -401,7 +401,7 @@
         formData.set('Email', email); // set lowercase email
 
         const method = id ? 'PUT' : 'POST';
-        const url = id ? `${API_URL}/${id}` : API_URL;
+        const url = id ? `${vendor_API}/${id}` : vendor_API;
 
         try {
             const res = await fetch(url, {

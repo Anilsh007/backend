@@ -1,6 +1,7 @@
 $(document).ready(function () {
     $(".clientAdmin").load("clientAdmin.html");
     $(".vendorRegister").load("vendorRegister.html");
+    $(".ClientUser").load("clientUser.html");
 
     $(".nav-item").click(function () {
         var target = $(this).attr("page-name");

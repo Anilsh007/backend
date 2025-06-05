@@ -24,12 +24,17 @@ app.use(express.static('public'));
 // ✅ Serve uploaded images statically from /uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ✅ Routes
+// ✅ Client User routes
 const clientAdminRoutes = require('./routes/clientAdmin');
 app.use('/api/client-admins', clientAdminRoutes);
 
+// ✅ Vendor routes
 const vendorRoutes = require('./routes/vendorRoutes');
 app.use('/api/vendors', vendorRoutes);
+
+// ✅ User routes
+const clientUser = require('./routes/clientUser');
+app.use('/api/clientUser', clientUser);
 
 // ✅ Start server after DB check
 async function startServer() {

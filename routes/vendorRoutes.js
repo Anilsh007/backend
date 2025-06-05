@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
 
     if (!clientId || !vendorcode) return cb(new Error('ClientId and vendorcode are required'));
 
-    const dir = path.join(__dirname, '..', 'uploads', clientId, vendorcode);
+    const dir = path.join(__dirname, '..', 'uploads', clientId, `Vendor_${vendorcode}`);
 
     try {
       await fsPromises.mkdir(dir, { recursive: true }); // ensures nested folder exists
