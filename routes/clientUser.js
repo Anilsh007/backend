@@ -115,7 +115,7 @@ router.get('/:id', async (req, res) => {
 
 
 // READ users by ClientId
-router.get('/clientUser/:clientId', async (req, res) => {
+router.get('/searchUser/:clientId', async (req, res) => {
   const { clientId } = req.params;
 
   try {
