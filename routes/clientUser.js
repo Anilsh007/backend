@@ -113,6 +113,30 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+
+// READ users by ClientId
+router.get('/clientUser/:clientId', async (req, res) => {
+  const { clientId } = req.params;
+
+  try {
+    const [rows] = await pool.execute(
+      `SELECT id, ClientId, UserCode, Fname, Lname, Email, Mobile, Gender, Question, Answer, profileImage, DateTime, Type 
+       FROM clientUsers WHERE ClientId = ?`,
+      [clientId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'No users found for this ClientId.' });
+    }
+
+    res.status(200).json(rows);
+  } catch (err) {
+    console.error('❌ Read by ClientId error:', err);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+});
+
+
 // UPDATE user by ID
 router.put('/:id', upload.single('profileImage'), async (req, res) => {
   try {
