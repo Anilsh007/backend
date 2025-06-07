@@ -158,8 +158,8 @@ router.get('/:vendorcode', async (req, res) => {
 });
 
 
-// ========================== READ by VENDORCODE ===============================
-router.get('/searchVendor:ClientId', async (req, res) => {
+// ========================== READ by ClientId ===============================
+router.get('/searchVendor/:ClientId', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM vendorRegister WHERE ClientId = ?', [req.params.ClientId]);
     if (rows.length === 0) return res.status(404).json({ message: 'Vendor not found' });
