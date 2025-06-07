@@ -13,6 +13,10 @@
 <button class="btn btn-primary mb-5" data-bs-toggle="modal" data-bs-target="#vendorModal" onclick="resetForm()">Add
     Vendor</button>
 
+<div class="mb-3">
+    <input type="text" id="searchVendorClientId" class="form-control" placeholder="Search by Client ID">
+</div>
+
 <div id="alertBox" class="alert d-none" role="alert"></div>
 <div class="table-responsive">
     <table class="table table-bordered" id="vendorTable">
@@ -246,6 +250,7 @@
 
 <script>
     const vendor_API = '/api/vendors';
+    const vendorTable = document.querySelector('#vendorTable tbody');
     let vendorsCache = [];
 
     function showMessage(type, message) {
@@ -256,13 +261,12 @@
         setTimeout(() => alertBox.classList.add('d-none'), 3000);
     }
 
-    async function fetchVendors() {
-        try {
-            const res = await fetch(vendor_API);
-            if (!res.ok) throw new Error('Failed to fetch vendors');
-            vendorsCache = await res.json();
-            const tbody = document.querySelector('#vendorTable tbody');
-            tbody.innerHTML = vendorsCache.map(v => `
+    async function fetchVendors(searchValue='') {
+        const res = await fetch(vendor_API);
+        const data = await res.json();
+        const filteredVendorTable = searchValue ? data.filter(a => a.ClientId.toLowerCase().includes(searchValue.toLowerCase())) : data;
+
+            vendorTable.innerHTML = filteredVendorTable.map(v => `
                 <tr>
                     <td>${v.id}</td>
                     <td>${v.DateTime}</td>
@@ -313,11 +317,12 @@
                     </td>
                 </tr>
             `).join('');
-        } catch (error) {
-            console.error(error);
-            showMessage('danger', 'Error loading vendors');
-        }
+        
     }
+
+    document.getElementById('searchVendorClientId').addEventListener('input', e => {
+        fetchVendors(e.target.value);
+    });
 
     function formatDateTime() {
         const now = new Date();

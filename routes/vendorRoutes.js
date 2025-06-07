@@ -145,7 +145,6 @@ router.get('/', async (req, res) => {
 });
 
 
-
 // ========================== READ by VENDORCODE ===============================
 router.get('/:vendorcode', async (req, res) => {
   try {
@@ -154,6 +153,19 @@ router.get('/:vendorcode', async (req, res) => {
     res.json(rows[0]);
   } catch (err) {
     console.error('Fetch by vendorcode error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+// ========================== READ by VENDORCODE ===============================
+router.get('/:ClientId', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM vendorRegister WHERE ClientId = ?', [req.params.ClientId]);
+    if (rows.length === 0) return res.status(404).json({ message: 'Vendor not found' });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('Fetch by ClientId error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
