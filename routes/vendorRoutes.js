@@ -163,7 +163,7 @@ router.get('/searchVendor/:ClientId', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM vendorRegister WHERE ClientId = ?', [req.params.ClientId]);
     if (rows.length === 0) return res.status(404).json({ message: 'Vendor not found' });
-    res.json(rows[0]);
+    res.json(rows);
   } catch (err) {
     console.error('Fetch by ClientId error:', err);
     res.status(500).json({ error: 'Internal server error' });
