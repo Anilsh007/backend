@@ -56,14 +56,22 @@ router.post('/', upload.single('profileImage'), async (req, res) => {
     const profileImage = getPath(req.file);
 
     // Check for duplicate email
-    const [existing] = await pool.execute(
-      'SELECT id FROM clientUsers WHERE Email = ?',
-      [Email.trim().toLowerCase()]
-    );
-    if (existing.length > 0) {
+    const emailToCheck = Email.trim().toLowerCase();
+
+    const emailCheckQueries = [
+      pool.execute('SELECT id FROM clientAdmin WHERE AdminEmail = ?', [emailToCheck]),
+      pool.execute('SELECT id FROM vendorRegister WHERE Email = ?', [emailToCheck]),
+      pool.execute('SELECT id FROM clientUsers WHERE Email = ?', [emailToCheck])
+    ];
+
+    const results = await Promise.all(emailCheckQueries);
+    const emailExists = results.some(([rows]) => rows.length > 0);
+
+    if (emailExists) {
       if (req.file) await fsPromises.unlink(req.file.path);
-      return res.status(400).json({ message: 'Email already registered.' });
+      return res.status(400).json({ message: 'Email already exists in another account.' });
     }
+
 
     await pool.execute(
       `INSERT INTO clientUsers 
@@ -149,14 +157,22 @@ router.put('/:id', upload.single('profileImage'), async (req, res) => {
     const profileImage = getPath(req.file);
 
     // Check for duplicate email on other user
-    const [existing] = await pool.execute(
-      'SELECT id FROM clientUsers WHERE Email = ? AND id != ?',
-      [Email.trim().toLowerCase(), id]
-    );
-    if (existing.length > 0) {
+    const emailToCheck = Email.trim().toLowerCase();
+
+    const emailCheckQueries = [
+      pool.execute('SELECT id FROM clientAdmin WHERE AdminEmail = ?', [emailToCheck]),
+      pool.execute('SELECT id FROM vendorRegister WHERE Email = ?', [emailToCheck]),
+      pool.execute('SELECT id FROM clientUsers WHERE Email = ? AND id != ?', [emailToCheck, id])
+    ];
+
+    const results = await Promise.all(emailCheckQueries);
+    const emailExists = results.some(([rows]) => rows.length > 0);
+
+    if (emailExists) {
       if (req.file) await fsPromises.unlink(req.file.path);
-      return res.status(400).json({ message: 'Email already in use.' });
+      return res.status(400).json({ message: 'Email already exists in another account.' });
     }
+
 
     // Delete old profile image if new one is uploaded
     if (req.file) {
@@ -202,17 +218,28 @@ router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const [rows] = await pool.execute('SELECT profileImage FROM clientUsers WHERE id = ?', [id]);
+    // Get user data including folder path info
+    const [rows] = await pool.execute(
+      'SELECT profileImage, ClientId, UserCode FROM clientUsers WHERE id = ?',
+      [id]
+    );
+
     if (rows.length === 0) return res.status(404).json({ message: 'User not found.' });
 
-    const imagePath = rows[0].profileImage
-      ? path.join(__dirname, '..', 'uploads', rows[0].profileImage)
-      : null;
+    const { profileImage, ClientId, UserCode } = rows[0];
 
+    // Define user folder path
+    const userFolder = path.join(__dirname, '..', 'uploads', ClientId, `User_${UserCode}`);
+
+    // Delete user from database
     await pool.execute('DELETE FROM clientUsers WHERE id = ?', [id]);
 
-    if (imagePath && fs.existsSync(imagePath)) {
-      await fsPromises.unlink(imagePath);
+    // Recursively delete the user folder (and its contents)
+    try {
+      await fsPromises.rm(userFolder, { recursive: true, force: true });
+      console.log(`✅ Deleted folder: ${userFolder}`);
+    } catch (folderErr) {
+      console.error(`❌ Failed to delete folder: ${userFolder}`, folderErr);
     }
 
     res.status(200).json({ message: 'User deleted successfully.' });
@@ -221,6 +248,8 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ message: 'Internal server error.' });
   }
 });
+
+
 
 
 // ========================== LOGIN ===============================

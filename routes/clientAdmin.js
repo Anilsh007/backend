@@ -66,11 +66,31 @@ router.post('/', multiUpload, async (req, res) => {
   const fullImagePath = req.file ? req.file.path : null;
 
   try {
-    const [existingMail] = await pool.execute('SELECT id FROM clientAdmin WHERE AdminEmail = ?', [AdminEmail]);
-    if (existingMail.length > 0) {
-      if (fullImagePath) await fsPromises.unlink(fullImagePath);
-      return res.status(400).json({ message: 'Email already exists.' });
+    const emailCheckQueries = [
+      pool.execute('SELECT id FROM clientAdmin WHERE AdminEmail = ?', [AdminEmail]),
+      pool.execute('SELECT id FROM vendorRegister WHERE Email = ?', [AdminEmail]),
+      pool.execute('SELECT id FROM clientUsers WHERE Email = ?', [AdminEmail]) // only if clientUser exists
+    ];
+
+    const results = await Promise.all(emailCheckQueries);
+    const emailExists = results.some(([rows]) => rows.length > 0);
+
+    if (emailExists) {
+      if (req.files) {
+        for (const key in req.files) {
+          for (const file of req.files[key]) {
+            try {
+              await fsPromises.unlink(file.path);
+            } catch (err) {
+              console.error('Error deleting file on email conflict:', file.path);
+            }
+          }
+        }
+      }
+
+      return res.status(400).json({ message: 'Email already exists in another table.' });
     }
+
 
     const [existingClient] = await pool.execute('SELECT id FROM clientAdmin WHERE ClientId = ?', [ClientId]);
     if (existingClient.length > 0) {
@@ -127,13 +147,27 @@ router.put('/:id', multiUpload, async (req, res) => {
   const baner = getPath(req.files['baner']);
 
   try {
-    const [existingMail] = await pool.execute(
-      'SELECT id FROM clientAdmin WHERE AdminEmail = ? AND id != ?',
-      [AdminEmail, id]
-    );
-    if (existingMail.length > 0) {
-      return res.status(400).json({ message: 'Email already in use by another admin.' });
+    const [[currentAdmin]] = await pool.execute('SELECT AdminEmail FROM clientAdmin WHERE id = ?', [id]);
+
+    if (!currentAdmin) {
+      return res.status(404).json({ message: 'Admin not found.' });
     }
+
+    if (currentAdmin.AdminEmail !== AdminEmail) {
+      const emailCheckQueries = [
+        pool.execute('SELECT id FROM clientAdmin WHERE AdminEmail = ? AND id != ?', [AdminEmail, id]),
+        pool.execute('SELECT id FROM vendorRegister WHERE Email = ?', [AdminEmail]),
+        pool.execute('SELECT id FROM clientUsers WHERE Email = ?', [AdminEmail])
+      ];
+
+      const results = await Promise.all(emailCheckQueries);
+      const emailExists = results.some(([rows]) => rows.length > 0);
+
+      if (emailExists) {
+        return res.status(400).json({ message: 'Email already exists in another table.' });
+      }
+    }
+
 
     const [existingClient] = await pool.execute(
       'SELECT id FROM clientAdmin WHERE ClientId = ? AND id != ?',
