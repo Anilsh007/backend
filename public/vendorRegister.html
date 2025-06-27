@@ -303,7 +303,7 @@
                     <td>${v.Password || ''}</td>
                     <td>${v.SecQuestion || ''}</td>
                     <td>${v.SecAnswer || ''}</td>
-                    <td>${v.Aboutus || ''}</td>
+                    <td title="${v.Aboutus}">${v.Aboutus || ''}</td>
                     <td>${v.Type || ''}</td>
                     <td>
                         ${v.profileImage ? `<img src="/uploads/${v.profileImage}" style="width: 50px; height: 50px; object-fit: cover;">` : ''}
@@ -311,7 +311,7 @@
                     <td>
                         ${v.docx ? `<a href="/uploads/${v.docx}" target="_blank">View Doc</a>` : ''}
                     </td>
-                    <td>${v.documentText || ''}</td>
+                    <td title="${v.documentText}">${v.documentText || ''}</td>
 
                     <td>
                         <button class="btn btn-sm btn-primary" onclick='editVendor(${JSON.stringify(v).replace(/'/g, "\\'")})'>Edit</button>
