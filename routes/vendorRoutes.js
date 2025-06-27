@@ -5,6 +5,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const fsPromises = require('fs').promises;
+const { extractText } = require('../utils/extractText');
+
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -66,6 +68,17 @@ router.post('/', multiUpload, async (req, res) => {
     const profileImage = getPath(req.files?.['profileImage']);
     const docx = getPath(req.files?.['docx']);
 
+    // Extract text from docx
+    let documentText = '';
+    if (docx) {
+      const fullDocxPath = path.join(__dirname, '..', 'uploads', docx);
+      try {
+        documentText = await extractText(fullDocxPath);
+      } catch (err) {
+        console.error('Failed to extract document text:', err);
+      }
+    }
+
     const [vendorMatch] = await pool.query('SELECT id FROM vendorRegister WHERE Email = ?', [Email]);
     const [adminMatch] = await pool.query('SELECT id FROM clientAdmin WHERE AdminEmail = ?', [Email]);
     const [clientMatch] = await pool.query('SELECT id FROM clientUsers WHERE Email = ?', [Email]);
@@ -83,8 +96,8 @@ router.post('/', multiUpload, async (req, res) => {
         Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
         Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
         Phone, Mobile, Sbclass, Class, UserId, Password,
-        SecQuestion, SecAnswer, Aboutus, Type, profileImage, docx, DateTime
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        SecQuestion, SecAnswer, Aboutus, Type, profileImage, docx, DateTime, documentText
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const values = [
@@ -93,7 +106,7 @@ router.post('/', multiUpload, async (req, res) => {
       Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
       Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
       Phone, Mobile, Sbclass, Class, UserId, Password,
-      SecQuestion, SecAnswer, Aboutus, Type, profileImage, docx, DateTime
+      SecQuestion, SecAnswer, Aboutus, Type, profileImage, docx, DateTime, documentText
     ];
 
     await pool.execute(sql, values);
@@ -140,9 +153,19 @@ router.get('/:vendorcode', async (req, res) => {
 // READ by ClientId
 router.get('/searchVendor/:ClientId', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM vendorRegister WHERE ClientId = ?', [req.params.ClientId]);
-    if (rows.length === 0) return res.status(404).json({ message: 'Vendor not found' });
+    const q = req.query.q?.toLowerCase();
+    let [rows] = await pool.query('SELECT * FROM vendorRegister WHERE ClientId = ?', [req.params.ClientId]);
+
+    if (q) {
+      rows = rows.filter((vendor) => {
+        return Object.values(vendor).some((val) =>
+          val?.toString().toLowerCase().includes(q)
+        );
+      });
+    }
+
     res.json(rows);
+
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -164,13 +187,14 @@ router.put('/:id', multiUpload, async (req, res) => {
     const profileImage = getPath(req.files?.['profileImage']);
     const docx = getPath(req.files?.['docx']);
 
-    const [vendorMatch] = await pool.query('SELECT id FROM vendorRegister WHERE Email = ?', [Email]);
+    const [vendorMatch] = await pool.query('SELECT id FROM vendorRegister WHERE Email = ? AND id != ?', [Email, id]);
     const [adminMatch] = await pool.query('SELECT id FROM clientAdmin WHERE AdminEmail = ?', [Email]);
     const [clientMatch] = await pool.query('SELECT id FROM clientUsers WHERE Email = ?', [Email]);
 
     if (vendorMatch.length > 0 || adminMatch.length > 0 || clientMatch.length > 0) {
       return res.status(400).json({ success: false, message: 'Email already exists in the system.' });
     }
+
 
     const updates = [
       'ClientId = ?', 'vendorcode = ?', 'vendorcompanyname = ?', 'Fname = ?', 'Lname = ?', 'Email = ?',
@@ -194,9 +218,20 @@ router.put('/:id', multiUpload, async (req, res) => {
       updates.push('profileImage = ?');
       values.push(profileImage);
     }
+
     if (docx) {
       updates.push('docx = ?');
       values.push(docx);
+
+      // Extract and update documentText
+      const fullDocxPath = path.join(__dirname, '..', 'uploads', docx);
+      try {
+        const documentText = await extractText(fullDocxPath);
+        updates.push('documentText = ?');
+        values.push(documentText);
+      } catch (err) {
+        console.error('Failed to extract updated document text:', err);
+      }
     }
 
     values.push(id);

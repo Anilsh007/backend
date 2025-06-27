@@ -18,7 +18,7 @@
     display: none;
 }
 
-#adminTable td:nth-child(17) {
+#adminTable td:nth-child(17),#vendorTable td:nth-child(35), #vendorTable td:nth-child(39){
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

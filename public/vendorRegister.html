@@ -60,6 +60,7 @@
                 <th>Type</th>
                 <th>profileImage</th>
                 <th>docx</th>
+                <th>Document Text</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -310,6 +311,7 @@
                     <td>
                         ${v.docx ? `<a href="/uploads/${v.docx}" target="_blank">View Doc</a>` : ''}
                     </td>
+                    <td>${v.documentText || ''}</td>
 
                     <td>
                         <button class="btn btn-sm btn-primary" onclick='editVendor(${JSON.stringify(v).replace(/'/g, "\\'")})'>Edit</button>
