@@ -36,6 +36,11 @@ app.use('/api/vendors', vendorRoutes);
 const clientUser = require('./routes/clientUser');
 app.use('/api/clientUser', clientUser);
 
+
+// ✅ Email routes
+const emailRoutes = require('./routes/emailRoutes');
+app.use('/api/email', emailRoutes);
+
 // ✅ Start server after DB check
 async function startServer() {
   await testDBConnection();
