@@ -1,5 +1,5 @@
 .navbar{
-    padding: 0;
+    padding: 0 !important;
 }
 
 .nav-item{
@@ -18,7 +18,7 @@
     display: none;
 }
 
-#adminTable td:nth-child(17),#vendorTable td:nth-child(35), #vendorTable td:nth-child(39){
+#adminTable td:nth-child(18),#vendorTable td:nth-child(36), #vendorTable td:nth-child(40){
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

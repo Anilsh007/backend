@@ -38,6 +38,7 @@
                 <th>Sam UIN</th>
                 <th>Fein</th>
                 <th>Duns</th>
+                <th>CAGE code</th>
                 <th>Naics1</th>
                 <th>Naics2</th>
                 <th>Naics3</th>
@@ -79,12 +80,9 @@
                 <div class="modal-body">
                     <!-- Added name="id" here -->
                     <input type="hidden" name="id" id="id">
+                    <input type="hidden" name="Type" value="2">
                     <div class="row g-3">
 
-                        <div class="col-md-4">
-                            <label class="form-label">Date & Time</label>
-                            <input type="text" class="form-control" id="DateTime" name="DateTime" readonly>
-                        </div>
                         <div class="col-md-4">
                             <label class="form-label">ClientId</label>
                             <input type="text" class="form-control" name="ClientId" required>
@@ -113,27 +111,33 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Address1</label>
-                            <input type="text" class="form-control" name="Address1">
+                            <input type="text" class="form-control" name="Address1" required>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Address2</label>
                             <input type="text" class="form-control" name="Address2">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">City</label>
-                            <input type="text" class="form-control" name="City">
+                            <label class="form-label">State</label>
+                            <select class="form-control" name="State" id="state">
+                                <option value="">--Select State--</option>
+                            </select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">State</label>
-                            <input type="text" class="form-control" name="State">
+                            <label class="form-label">City</label>
+                            <select class="form-control" name="City" id="city">
+                                <option value="">--Select City--</option>
+                            </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Zip Code</label>
-                            <input type="number" class="form-control" name="ZipCode">
+                            <select class="form-control" name="ZipCode" id="zip">
+                                <option value="">--Select ZIP Code--</option>
+                            </select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Sam UIN</label>
-                            <input type="text" class="form-control" name="Samuin">
+                            <label class="form-label">Sam UIE</label>
+                            <input type="text" class="form-control" name="Samuie">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Fein</label>
@@ -144,8 +148,12 @@
                             <input type="number" class="form-control" name="Duns">
                         </div>
                         <div class="col-md-4">
+                            <label class="form-label">CAGE Code</label>
+                            <input type="text" class="form-control" name="CAGE">
+                        </div>
+                        <div class="col-md-4">
                             <label class="form-label">Naics1</label>
-                            <input type="number" class="form-control" name="Naics1">
+                            <input type="number" class="form-control" name="Naics1" required>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Naics2</label>
@@ -193,15 +201,43 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Small Business</label>
-                            <input type="text" class="form-control" name="Sbclass">
+                            <select class="form-control" name="Sbclass">
+                                <option>Options</option>
+                                <option value="None">None</option>
+                                <option value="Minority Business Enterprise">Minority Business Enterprise</option>
+                                <option value="Women Owned Minority Business Enterprise">Women Owned Minority Business
+                                    Enterprise</option>
+                                <option value="Veteran Owned Small Business">Veteran Owned Small Business</option>
+                                <option value="Service Disabled Veteran Owned Small Business">Service Disabled Veteran
+                                    Owned Small Business</option>
+                                <option value="Small Disadvantaged Business">Small Disadvantaged Business</option>
+                                <option value="SBA 8a Certified Business">SBA 8a Certified Business</option>
+                                <option value="HUB - Hubzone">HUB - Hubzone</option>
+                            </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Business Classification</label>
-                            <input type="text" class="form-control" name="Class">
+                            <select class="form-control" name="Class">
+                                <option>Options</option>
+                                <option value="Construction">Construction</option>
+                                <option value="Printing & Mailing">Printing & Mailing</option>
+                                <option value="Mechanical, Plumbing & Electrical">Mechanical, Plumbing & Electrical
+                                </option>
+                                <option value="IT Staffing & consulting">IT Staffing & consulting</option>
+                                <option value="Janitorial">Janitorial</option>
+                                <option value="Lanscaping/Ground Maintenance">Lanscaping/Ground Maintenance</option>
+                                <option value="Healthcare">Healthcare</option>
+                                <option value="Computer repair, parts, equipment">Computer repair, parts, equipment
+                                </option>
+                                <option value="Insurance">Insurance</option>
+                                <option value="Travel & Leisure">Travel & Leisure </option>
+                                <option value="Office Supplies">Office Supplies</option>
+                                <option value="Training">Training</option>
+                            </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Company URL</label>
-                            <input type="text" class="form-control" name="UserId">
+                            <input type="text" class="form-control" name="URL">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Password</label>
@@ -228,16 +264,12 @@
                         <div class="col-md-4">
                             <label class="form-label">Document</label>
                             <input class="form-control" name="docx" id="docx" type="file" accept=".doc,.docx"
-                                onchange="document.getElementById('docxFileName').textContent = this.files[0].name;">
+                                onchange="document.getElementById('docxFileName').textContent = this.files[0].name;"
+                                required>
                             <span id="docxFileName"></span>
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label">Type</label>
-                            <select class="form-select" name="Type">
-                                <option value="2" selected>Type 2</option>
-                            </select>
-                        </div>
+
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -252,7 +284,56 @@
 <script>
     const vendor_API = '/api/vendors';
     const vendorTable = document.querySelector('#vendorTable tbody');
-    let vendorsCache = [];
+    let vendorsCache = {};
+
+    let stateSelect = document.getElementById('state');
+    let citySelect = document.getElementById('city');
+    let zipSelect = document.getElementById('zip');
+    let data = [];
+
+    // Load JSON
+    fetch('zipcode.json')
+        .then(res => res.json())
+        .then(json => {
+            data = json;
+            data.forEach(state => {
+                let opt = document.createElement('option');
+                opt.value = state.state;
+                opt.textContent = state.state;
+                stateSelect.appendChild(opt);
+            });
+        });
+
+    // Populate Cities
+    stateSelect.addEventListener('change', () => {
+        citySelect.innerHTML = '<option value="">--Select City--</option>';
+        zipSelect.innerHTML = '<option value="">--Select ZIP Code--</option>';
+
+        const selectedState = data.find(d => d.state === stateSelect.value);
+        if (selectedState) {
+            selectedState.cities.forEach(city => {
+                let opt = document.createElement('option');
+                opt.value = city.name;
+                opt.textContent = city.name;
+                citySelect.appendChild(opt);
+            });
+        }
+    });
+
+    // Populate ZIP Codes
+    citySelect.addEventListener('change', () => {
+        zipSelect.innerHTML = '<option value="">--Select ZIP Code--</option>';
+        const selectedState = data.find(d => d.state === stateSelect.value);
+        const selectedCity = selectedState?.cities.find(c => c.name === citySelect.value);
+        if (selectedCity) {
+            selectedCity.zip_codes.forEach(zip => {
+                let opt = document.createElement('option');
+                opt.value = zip;
+                opt.textContent = zip;
+                zipSelect.appendChild(opt);
+            });
+        }
+    });
 
     function showMessage(type, message) {
         const alertBox = document.getElementById('alertBox');
@@ -262,82 +343,83 @@
         setTimeout(() => alertBox.classList.add('d-none'), 3000);
     }
 
-    async function fetchVendors(searchValue='') {
+    async function fetchVendors(searchValue = '') {
         const res = await fetch(vendor_API);
         const data = await res.json();
-        const filteredVendorTable = searchValue ? data.filter(a => a.ClientId.toLowerCase().includes(searchValue.toLowerCase())) : data;
 
-            vendorTable.innerHTML = filteredVendorTable.map(v => `
-                <tr>
-                    <td>${v.id}</td>
-                    <td>${v.DateTime}</td>
-                    <td>${v.ClientId}</td>
-                    <td>${v.vendorcode}</td>
-                    <td>${v.vendorcompanyname}</td>
-                    <td>${v.Fname}</td>
-                    <td>${v.Lname}</td>
-                    <td>${v.Email}</td>
-                    <td>${v.Address1 || ''}</td>
-                    <td>${v.Address2 || ''}</td>
-                    <td>${v.City || ''}</td>
-                    <td>${v.State || ''}</td>
-                    <td>${v.ZipCode || ''}</td>
-                    <td>${v.Samuin || ''}</td>
-                    <td>${v.Fein || ''}</td>
-                    <td>${v.Duns || ''}</td>
-                    <td>${v.Naics1 || ''}</td>
-                    <td>${v.Naics2 || ''}</td>
-                    <td>${v.Naics3 || ''}</td>
-                    <td>${v.Naics4 || ''}</td>
-                    <td>${v.Naics5 || ''}</td>
-                    <td>${v.Nigp1 || ''}</td>
-                    <td>${v.Nigp2 || ''}</td>
-                    <td>${v.Nigp3 || ''}</td>
-                    <td>${v.Nigp4 || ''}</td>
-                    <td>${v.Nigp5 || ''}</td>
-                    <td>${v.Phone || ''}</td>
-                    <td>${v.Mobile || ''}</td>
-                    <td>${v.Sbclass || ''}</td>
-                    <td>${v.Class || ''}</td>
-                    <td>${v.UserId || ''}</td>
-                    <td>${v.Password || ''}</td>
-                    <td>${v.SecQuestion || ''}</td>
-                    <td>${v.SecAnswer || ''}</td>
-                    <td title="${v.Aboutus}">${v.Aboutus || ''}</td>
-                    <td>${v.Type || ''}</td>
-                    <td>
-                        ${v.profileImage ? `<img src="/uploads/${v.profileImage}" style="width: 50px; height: 50px; object-fit: cover;">` : ''}
-                    </td>
-                    <td>
-                        ${v.docx ? `<a href="/uploads/${v.docx}" target="_blank">View Doc</a>` : ''}
-                    </td>
-                    <td title="${v.documentText}">${v.documentText || ''}</td>
+        vendorsCache = {}; // Reset
+        data.forEach(v => {
+            vendorsCache[v.id.toString()] = v;
+        });
 
-                    <td>
-                        <button class="btn btn-sm btn-primary" onclick='editVendor(${JSON.stringify(v).replace(/'/g, "\\'")})'>Edit</button>
-                        <button class="btn btn-sm btn-danger" onclick='deleteVendor(${v.id})'>Delete</button>
-                    </td>
-                </tr>
-            `).join('');
-        
+        const filteredVendorTable = searchValue ? data.filter(a => a.ClientId.toLowerCase().includes(searchValue.toLowerCase()))
+            : data;
+
+        vendorTable.innerHTML = filteredVendorTable.map(v => `
+        <tr>
+            <td>${v.id}</td>
+            <td>${v.DateTime}</td>
+            <td>${v.ClientId}</td>
+            <td>${v.vendorcode}</td>
+            <td>${v.vendorcompanyname}</td>
+            <td>${v.Fname}</td>
+            <td>${v.Lname}</td>
+            <td>${v.Email}</td>
+            <td>${v.Address1 || ''}</td>
+            <td>${v.Address2 || ''}</td>
+            <td>${v.City || ''}</td>
+            <td>${v.State || ''}</td>
+            <td>${v.ZipCode || ''}</td>
+            <td>${v.Samuie || ''}</td>
+            <td>${v.Fein || ''}</td>
+            <td>${v.Duns || ''}</td>
+            <td>${v.CAGE || ''}</td>
+            <td>${v.Naics1 || ''}</td>
+            <td>${v.Naics2 || ''}</td>
+            <td>${v.Naics3 || ''}</td>
+            <td>${v.Naics4 || ''}</td>
+            <td>${v.Naics5 || ''}</td>
+            <td>${v.Nigp1 || ''}</td>
+            <td>${v.Nigp2 || ''}</td>
+            <td>${v.Nigp3 || ''}</td>
+            <td>${v.Nigp4 || ''}</td>
+            <td>${v.Nigp5 || ''}</td>
+            <td>${v.Phone || ''}</td>
+            <td>${v.Mobile || ''}</td>
+            <td>${v.Sbclass || ''}</td>
+            <td>${v.Class || ''}</td>
+            <td>${v.URL || ''}</td>
+            <td>${v.Password || ''}</td>
+            <td>${v.SecQuestion || ''}</td>
+            <td>${v.SecAnswer || ''}</td>
+            <td title="${v.Aboutus}">${v.Aboutus || ''}</td>
+            <td>${v.Type || ''}</td>
+            <td>
+                ${v.profileImage ? `<img src="/uploads/${v.profileImage}"
+                    style="width: 50px; height: 50px; object-fit: cover;">` : ''}
+            </td>
+            <td>
+                ${v.docx ? `<a href="/uploads/${v.docx}" target="_blank">View Doc</a>` : ''}
+            </td>
+            <td title="${v.documentText}">${v.documentText || ''}</td>
+
+            <td>
+                <button class="btn btn-sm btn-primary" data-id="${v.id}" onclick="editVendorById(this)">Edit</button>
+                <button class="btn btn-sm btn-danger" onclick='deleteVendor(${v.id})'>Delete</button>
+            </td>
+        </tr>
+        `).join('');
+
     }
 
     document.getElementById('searchVendorClientId').addEventListener('input', e => {
         fetchVendors(e.target.value);
     });
 
-    function formatDateTime() {
-        const now = new Date();
-        const pad = n => n.toString().padStart(2, '0');
-        return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ` +
-            `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-    }
-
     function resetForm() {
         const form = document.getElementById('vendorForm');
         form.reset();
         form.elements['id'].value = '';
-        document.getElementById('DateTime').value = formatDateTime();
         document.getElementById('previewImage').src = '';
         document.getElementById('docxFileName').textContent = '';
 
@@ -350,8 +432,22 @@
         docxInput.dispatchEvent(new Event('change'));
     }
 
+    function editVendorById(button) {
+        const id = button.dataset.id;
+        const vendor = vendorsCache[id];
+
+        if (!vendor) {
+            console.error('Vendor not found in cache');
+            return showMessage('danger', 'Edit failed — vendor data missing');
+        }
+
+        editVendor(vendor);  // ✅ this is your existing function
+    }
+
 
     function editVendor(data) {
+        console.log('Editing vendor:', data); // debug
+
         const form = document.getElementById('vendorForm');
         for (const key in data) {
             const input = form.elements[key];
@@ -360,7 +456,6 @@
             }
         }
 
-        // Optionally show previews
         if (data.profileImage) {
             document.getElementById('previewImage').src = `/uploads/${data.profileImage}`;
         }
@@ -399,7 +494,7 @@
             return;
         }
 
-        const emailExists = vendorsCache.some(v => v.Email?.toLowerCase() === email && v.id != id);
+        const emailExists = Object.values(vendorsCache).some(v => v.Email?.toLowerCase() === email && v.id != id);
         if (emailExists) {
             showMessage('danger', 'This email already exists. Please use a different email.');
             return;

@@ -50,10 +50,10 @@ router.post('/', multiUpload, async (req, res) => {
   const {
     ClientId, vendorcode, vendorcompanyname, Fname, Lname, Email,
     Address1, Address2, City, State, ZipCode,
-    Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
+    Samuie, Fein, Duns, CAGE, Naics1, Naics2, Naics3, Naics4, Naics5,
     Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
-    Phone, Mobile, Sbclass, Class, UserId, Password,
-    SecQuestion, SecAnswer, Aboutus, Type, DateTime
+    Phone, Mobile, Sbclass, Class, URL, Password,
+    SecQuestion, SecAnswer, Aboutus, Type
   } = req.body;
 
   const uploadDir = path.join(__dirname, '..', 'uploads', ClientId, `Vendor_${vendorcode}`);
@@ -93,20 +93,20 @@ router.post('/', multiUpload, async (req, res) => {
       INSERT INTO vendorRegister (
         ClientId, vendorcode, vendorcompanyname, Fname, Lname, Email,
         Address1, Address2, City, State, ZipCode,
-        Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
+        Samuie, Fein, Duns, CAGE, Naics1, Naics2, Naics3, Naics4, Naics5,
         Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
-        Phone, Mobile, Sbclass, Class, UserId, Password,
-        SecQuestion, SecAnswer, Aboutus, Type, profileImage, docx, DateTime, documentText
+        Phone, Mobile, Sbclass, Class, URL, Password,
+        SecQuestion, SecAnswer, Aboutus, Type, profileImage, docx, documentText
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const values = [
       ClientId, vendorcode, vendorcompanyname, Fname, Lname, Email,
       Address1, Address2, City, State, ZipCode,
-      Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
+      Samuie, Fein, Duns, CAGE, Naics1, Naics2, Naics3, Naics4, Naics5,
       Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
-      Phone, Mobile, Sbclass, Class, UserId, Password,
-      SecQuestion, SecAnswer, Aboutus, Type, profileImage, docx, DateTime, documentText
+      Phone, Mobile, Sbclass, Class, URL, Password,
+      SecQuestion, SecAnswer, Aboutus, Type, profileImage, docx, documentText
     ];
 
     await pool.execute(sql, values);
@@ -178,10 +178,10 @@ router.put('/:id', multiUpload, async (req, res) => {
     const {
       ClientId, vendorcode, vendorcompanyname, Fname, Lname, Email,
       Address1, Address2, City, State, ZipCode,
-      Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
+      Samuie, Fein, Duns, CAGE, Naics1, Naics2, Naics3, Naics4, Naics5,
       Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
-      Phone, Mobile, Sbclass, Class, UserId, Password,
-      SecQuestion, SecAnswer, Aboutus, Type, DateTime
+      Phone, Mobile, Sbclass, Class, URL, Password,
+      SecQuestion, SecAnswer, Aboutus, Type
     } = req.body;
 
     const profileImage = getPath(req.files?.['profileImage']);
@@ -199,19 +199,19 @@ router.put('/:id', multiUpload, async (req, res) => {
     const updates = [
       'ClientId = ?', 'vendorcode = ?', 'vendorcompanyname = ?', 'Fname = ?', 'Lname = ?', 'Email = ?',
       'Address1 = ?', 'Address2 = ?', 'City = ?', 'State = ?', 'ZipCode = ?',
-      'Samuin = ?', 'Fein = ?', 'Duns = ?', 'Naics1 = ?', 'Naics2 = ?', 'Naics3 = ?', 'Naics4 = ?', 'Naics5 = ?',
+      'Samuie = ?', 'Fein = ?', 'Duns = ?', 'CAGE = ?', 'Naics1 = ?', 'Naics2 = ?', 'Naics3 = ?', 'Naics4 = ?', 'Naics5 = ?',
       'Nigp1 = ?', 'Nigp2 = ?', 'Nigp3 = ?', 'Nigp4 = ?', 'Nigp5 = ?',
-      'Phone = ?', 'Mobile = ?', 'Sbclass = ?', 'Class = ?', 'UserId = ?', 'Password = ?',
-      'SecQuestion = ?', 'SecAnswer = ?', 'Aboutus = ?', 'Type = ?', 'DateTime = ?'
+      'Phone = ?', 'Mobile = ?', 'Sbclass = ?', 'Class = ?', 'URL = ?', 'Password = ?',
+      'SecQuestion = ?', 'SecAnswer = ?', 'Aboutus = ?', 'Type = ?'
     ];
 
     const values = [
       ClientId, vendorcode, vendorcompanyname, Fname, Lname, Email,
       Address1, Address2, City, State, ZipCode,
-      Samuin, Fein, Duns, Naics1, Naics2, Naics3, Naics4, Naics5,
+      Samuie, Fein, Duns, CAGE, Naics1, Naics2, Naics3, Naics4, Naics5,
       Nigp1, Nigp2, Nigp3, Nigp4, Nigp5,
-      Phone, Mobile, Sbclass, Class, UserId, Password,
-      SecQuestion, SecAnswer, Aboutus, Type, DateTime
+      Phone, Mobile, Sbclass, Class, URL, Password,
+      SecQuestion, SecAnswer, Aboutus, Type
     ];
 
     if (profileImage) {

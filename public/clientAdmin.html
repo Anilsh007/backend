@@ -21,6 +21,7 @@
             <thead class="table-light">
                 <tr>
                     <th>ID</th>
+                    <th>DateTime</th>
                     <th>Client Id</th>
                     <th>Company</th>
                     <th>First</th>
@@ -61,6 +62,7 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" name="id" id="adminId" />
+                    <input type="hidden" value="1" name="Type"/>
                     <div class="row g-3">
                         <div class="col-md-4"><input class="form-control" name="ClientId" placeholder="Client Id"
                                 required></div>
@@ -96,8 +98,6 @@
                                 required></div>
                         <div class="col-md-4"><input class="form-control" value="1" readonly name="LicenseQty" placeholder="License Qty"
                                 type="number" required></div>
-                        <div class="col-md-4"><input class="form-control" value="1" readonly name="Type" placeholder="Type" type="number"
-                                required></div>
                         <div class="col-md-4">
                             <label for="companylogo">Company Logo</label>
                             <input class="form-control" name="companylogo" id="companylogo" type="file"
@@ -148,6 +148,7 @@
         adminTable.innerHTML = filtered.map(admin => `
         <tr>
             <td>${admin.id}</td>
+            <td>${admin.DateTime}</td>
             <td>${admin.ClientId}</td>
             <td>${admin.CompanyName}</td>
             <td>${admin.FirstName}</td>
