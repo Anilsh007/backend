@@ -24,3 +24,19 @@
     text-overflow: ellipsis;
     max-width: 150px;
 }
+
+.table-scroll-container {
+  max-height: 400px; /* Adjust as needed */
+  overflow-y: auto;
+  margin-top: 10px;
+  border: 1px solid #ddd;
+}
+
+/* Optional: Fix the table header */
+.table-scroll-container thead th {
+  position: sticky;
+  top: 0;
+  background-color: #343a40; /* match your thead background */
+  color: white;
+  z-index: 1;
+}

@@ -1,35 +1,42 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
 const nodemailer = require('nodemailer');
 
-// Setup transporter with your Hostinger SMTP config
+// Configure multer for memory storage
+const upload = multer({ storage: multer.memoryStorage() });
+
 const transporter = nodemailer.createTransport({
   host: "smtp.hostinger.com",
   port: 465,
-  secure: true, // SSL/TLS
+  secure: true,
   auth: {
-    user: process.env.EMAIL_USER, // = admin@cvcsem.com
+    user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 });
 
-// POST /api/email/send
-router.post('/send', async (req, res) => {
+router.post('/send', upload.array('attachments'), async (req, res) => {
   const { to, cc, bcc, subject, body } = req.body;
 
-  // Validate essential fields
   if (!to || !subject || !body) {
     return res.status(400).json({ message: "Missing required fields" });
   }
 
+  const attachments = req.files?.map(file => ({
+    filename: file.originalname,
+    content: file.buffer,
+  })) || [];
+
   try {
     await transporter.sendMail({
-      from: `"CVCSEM Admin" <admin@cvcsem.com>`, // always send from this
+      from: `"CVCSEM Admin" <admin@cvcsem.com>`,
       to,
       cc,
       bcc,
       subject,
       text: body,
+      attachments,
     });
 
     res.json({ success: true, message: "Email sent successfully" });

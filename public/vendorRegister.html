@@ -125,15 +125,11 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">City</label>
-                            <select class="form-control" name="City" id="city">
-                                <option value="">--Select City--</option>
-                            </select>
+                            <input type="text" class="form-control" name="City">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Zip Code</label>
-                            <select class="form-control" name="ZipCode" id="zip">
-                                <option value="">--Select ZIP Code--</option>
-                            </select>
+                            <input type="text" class="form-control" name="ZipCode">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Sam UIE</label>
@@ -305,35 +301,35 @@
         });
 
     // Populate Cities
-    stateSelect.addEventListener('change', () => {
-        citySelect.innerHTML = '<option value="">--Select City--</option>';
-        zipSelect.innerHTML = '<option value="">--Select ZIP Code--</option>';
+    // stateSelect.addEventListener('change', () => {
+    //     citySelect.innerHTML = '<option value="">--Select City--</option>';
+    //     zipSelect.innerHTML = '<option value="">--Select ZIP Code--</option>';
 
-        const selectedState = data.find(d => d.state === stateSelect.value);
-        if (selectedState) {
-            selectedState.cities.forEach(city => {
-                let opt = document.createElement('option');
-                opt.value = city.name;
-                opt.textContent = city.name;
-                citySelect.appendChild(opt);
-            });
-        }
-    });
+    //     const selectedState = data.find(d => d.state === stateSelect.value);
+    //     if (selectedState) {
+    //         selectedState.cities.forEach(city => {
+    //             let opt = document.createElement('option');
+    //             opt.value = city.name;
+    //             opt.textContent = city.name;
+    //             citySelect.appendChild(opt);
+    //         });
+    //     }
+    // });
 
     // Populate ZIP Codes
-    citySelect.addEventListener('change', () => {
-        zipSelect.innerHTML = '<option value="">--Select ZIP Code--</option>';
-        const selectedState = data.find(d => d.state === stateSelect.value);
-        const selectedCity = selectedState?.cities.find(c => c.name === citySelect.value);
-        if (selectedCity) {
-            selectedCity.zip_codes.forEach(zip => {
-                let opt = document.createElement('option');
-                opt.value = zip;
-                opt.textContent = zip;
-                zipSelect.appendChild(opt);
-            });
-        }
-    });
+    // citySelect.addEventListener('change', () => {
+    //     zipSelect.innerHTML = '<option value="">--Select ZIP Code--</option>';
+    //     const selectedState = data.find(d => d.state === stateSelect.value);
+    //     const selectedCity = selectedState?.cities.find(c => c.name === citySelect.value);
+    //     if (selectedCity) {
+    //         selectedCity.zip_codes.forEach(zip => {
+    //             let opt = document.createElement('option');
+    //             opt.value = zip;
+    //             opt.textContent = zip;
+    //             zipSelect.appendChild(opt);
+    //         });
+    //     }
+    // });
 
     function showMessage(type, message) {
         const alertBox = document.getElementById('alertBox');
