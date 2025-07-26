@@ -35,7 +35,7 @@ router.post('/send', upload.array('attachments'), async (req, res) => {
       cc,
       bcc,
       subject,
-      text: body,
+      html: body,
       attachments,
     });
 

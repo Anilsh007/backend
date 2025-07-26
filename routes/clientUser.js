@@ -69,7 +69,7 @@ router.post('/', upload.single('profileImage'), async (req, res) => {
 
     if (emailExists) {
       if (req.file) await fsPromises.unlink(req.file.path);
-      return res.status(400).json({ message: 'Email already exists in another account.' });
+      return res.status(400).json({ message: 'Email already exists.' });
     }
 
 
@@ -170,7 +170,7 @@ router.put('/:id', upload.single('profileImage'), async (req, res) => {
 
     if (emailExists) {
       if (req.file) await fsPromises.unlink(req.file.path);
-      return res.status(400).json({ message: 'Email already exists in another account.' });
+      return res.status(400).json({ message: 'Email already exists.' });
     }
 
 
