@@ -3,6 +3,7 @@ $(document).ready(function () {
     $(".vendorRegister").load("vendorRegister.html");
     $(".ClientUser").load("clientUser.html");
     $(".Email").load("email.html");
+    $(".MatchMaking").load("MatchMaking.html");
 
     $(".nav-item").click(function () {
         var target = $(this).attr("page-name");

@@ -36,10 +36,13 @@ app.use('/api/vendors', vendorRoutes);
 const clientUser = require('./routes/clientUser');
 app.use('/api/clientUser', clientUser);
 
-
 // ✅ Email routes
 const emailRoutes = require('./routes/emailRoutes');
 app.use('/api/email', emailRoutes);
+
+// ✅ Matchmaking routes
+const matchMakingRoutes = require('./routes/matchMaking');
+app.use('/api/matchmaking', matchMakingRoutes);
 
 // ✅ Start server after DB check
 async function startServer() {

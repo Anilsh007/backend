@@ -1,0 +1,190 @@
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Matchmaking Events</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#eventModal" onclick="openAddModal()">Add
+            Event</button>
+    </div>
+
+    <table class="table table-bordered table-hover" id="eventTable">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Client ID</th>
+                <th>Title</th>
+                <th>Date</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Location</th>
+                <th>Duration</th>
+                <th>Clients Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="eventModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="eventForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="eventModalLabel">Add Matchmaking Event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body row g-3">
+                    <input type="hidden" id="editEventId" />
+
+
+                    <div class="col-md-6">
+                        <label for="ClientId" class="form-label">Client ID</label>
+                        <input type="text" class="form-control" id="ClientId" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="Title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="Title" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="Date" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="Date" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="StartTime" class="form-label">Start Time</label>
+                        <input type="time" class="form-control" id="StartTime" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="EndTime" class="form-label">End Time</label>
+                        <input type="time" class="form-control" id="EndTime" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="TimeDuration" class="form-label">Time Duration</label>
+                        <input type="text" class="form-control" id="TimeDuration" />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="Location" class="form-label">Location</label>
+                        <input type="text" class="form-control" id="Location" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="ClientsName" class="form-label">Clients Name</label>
+                        <input type="text" class="form-control" id="ClientsName" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const apiUrl = "api/matchMaking";
+    const eventTable = document.querySelector("#eventTable tbody");
+    const eventModal = new bootstrap.Modal(document.getElementById("eventModal"));
+    const form = document.getElementById("eventForm");
+
+    async function fetchEvents() {
+        const res = await fetch(apiUrl);
+        const events = await res.json();
+        const formatDisplayTime = (time) => {
+            return time?.slice(0, 5); // removes :00 seconds
+        };
+
+        eventTable.innerHTML = events.map(event => `
+                <tr>
+                <td>${event.id}</td>
+                <td>${event.ClientId}</td>
+                <td>${event.Title}</td>
+                <td>${event.Date}</td>
+                <td>${formatDisplayTime(event.StartTime)}</td>
+                <td>${formatDisplayTime(event.EndTime)}</td>
+                <td>${event.Location}</td>
+                <td>${event.TimeDuration}</td>
+                <td>${event.ClientsName}</td>
+                <td>
+                    <button class="btn btn-sm btn-warning" onclick="openEditModal('${event.id}')">Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteEvent('${event.id}')">Delete</button>
+                </td>
+                </tr>
+            `).join("");
+
+    }
+
+    function openAddModal() {
+        form.reset();
+        document.getElementById("editEventId").value = "";
+        document.getElementById("ClientId").disabled = false;
+        document.getElementById("eventModalLabel").innerText = "Add Matchmaking Event";
+    }
+
+    async function openEditModal(eventId) {
+        const res = await fetch(`${apiUrl}/${eventId}`);
+        const data = await res.json();
+
+        document.getElementById("editEventId").value = eventId;
+        document.getElementById("ClientId").value = data.ClientId;
+        document.getElementById("ClientId").disabled = true;
+        document.getElementById("Title").value = data.Title;
+        document.getElementById("Date").value = data.Date;
+        document.getElementById("StartTime").value = data.StartTime?.slice(0, 5);
+        document.getElementById("EndTime").value = data.EndTime?.slice(0, 5);
+        document.getElementById("Location").value = data.Location;
+        document.getElementById("TimeDuration").value = data.TimeDuration;
+        document.getElementById("ClientsName").value = data.ClientsName;
+        document.getElementById("eventModalLabel").innerText = "Edit Matchmaking Event";
+        eventModal.show();
+    }
+
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formatTime = (timeStr) => {
+            if (!timeStr) return "00:00:00";
+            return timeStr.length === 5 ? `${timeStr}:00` : timeStr; // Convert HH:mm to HH:mm:00
+        };
+
+        const eventData = {
+            ClientId: document.getElementById("ClientId").value,
+            Title: document.getElementById("Title").value,
+            Date: document.getElementById("Date").value,
+            StartTime: formatTime(document.getElementById("StartTime").value),
+            EndTime: formatTime(document.getElementById("EndTime").value),
+            Location: document.getElementById("Location").value,
+            TimeDuration: document.getElementById("TimeDuration").value,
+            ClientsName: document.getElementById("ClientsName").value,
+        };
+
+        const editEventId = document.getElementById("editEventId").value;
+
+        if (editEventId) {
+            await fetch(`${apiUrl}/${editEventId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(eventData),
+            });
+        } else {
+            await fetch(apiUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(eventData),
+            });
+        }
+
+        eventModal.hide();
+        fetchEvents();
+    });
+
+
+    async function deleteEvent(eventId) {
+        if (confirm("Are you sure you want to delete this event?")) {
+            await fetch(`${apiUrl}/${eventId}`, { method: "DELETE" });
+            fetchEvents();
+        }
+    }
+
+
+    fetchEvents();
+</script>
