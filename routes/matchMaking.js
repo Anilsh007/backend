@@ -56,7 +56,7 @@ router.delete('/:id', async (req, res) => {
     res.json({ message: 'Matchmaking event deleted successfully' });
 });
 
-router.get('/by-client/:clientId', async (req, res) => {
+router.get('/clientMatch/:clientId', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM matchMaking WHERE ClientId = ?', [req.params.clientId]);
         res.json(rows);
