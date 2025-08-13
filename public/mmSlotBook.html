@@ -1,0 +1,47 @@
+<h2>Matchmaking Slot Booking</h2>
+
+<label>MatchMakingId: <input type="number" id="matchMakingId" value="8"></label>
+<button onclick="loadSlots()">Load Slots</button>
+
+<h3>Available Slots</h3>
+<div id="slots"></div>
+
+<h3>Book Slot</h3>
+<label>Client Name: <input type="text" id="clientName"></label><br>
+<label>Slot Start (HH:MM:SS): <input type="text" id="slotStart"></label><br>
+<label>Slot End (HH:MM:SS): <input type="text" id="slotEnd"></label><br>
+<label>Vendor ID: <input type="text" id="vendorId"></label><br>
+<button onclick="bookSlot()">Book</button>
+
+<script>
+    async function loadSlots() {
+        let id = document.getElementById("matchMakingId").value;
+        let res = await fetch(`http://localhost:5000/api/mm-slot-book/${id}`);
+        let data = await res.json();
+
+        let html = "<ul>";
+        data.forEach(slot => {
+            html += `<li>${slot.ClientName} | ${slot.SlotStart} - ${slot.SlotEnd} | Booked by: ${slot.BookedByVendor}</li>`;
+        });
+        html += "</ul>";
+        document.getElementById("slots").innerHTML = html;
+    }
+
+    async function bookSlot() {
+        let res = await fetch("http://localhost:5000/api/mm-slot-book", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                MatchMakingId: document.getElementById("matchMakingId").value,
+                ClientName: document.getElementById("clientName").value,
+                SlotStart: document.getElementById("slotStart").value,
+                SlotEnd: document.getElementById("slotEnd").value,
+                BookedByVendor: document.getElementById("vendorId").value
+            })
+        });
+
+        let data = await res.json();
+        alert(data.message);
+        loadSlots();
+    }
+</script>

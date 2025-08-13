@@ -4,6 +4,7 @@ $(document).ready(function () {
     $(".ClientUser").load("clientUser.html");
     $(".Email").load("email.html");
     $(".MatchMaking").load("MatchMaking.html");
+    $(".mmSlotBook").load("mmSlotBook.html");
 
     $(".nav-item").click(function () {
         var target = $(this).attr("page-name");

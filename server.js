@@ -44,6 +44,10 @@ app.use('/api/email', emailRoutes);
 const matchMakingRoutes = require('./routes/matchMaking');
 app.use('/api/matchmaking', matchMakingRoutes);
 
+// ✅ Matchmaking Slot Booking routes
+const mmSlotBookRoutes = require('./routes/mmSlotBook');
+app.use('/api/mmSlotBook', mmSlotBookRoutes);
+
 // ✅ Start server after DB check
 async function startServer() {
   await testDBConnection();
