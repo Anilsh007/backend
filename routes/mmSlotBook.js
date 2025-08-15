@@ -20,7 +20,7 @@ router.get("/:matchMakingId", async (req, res) => {
 
 // ✅ Book a slot
 router.post("/", async (req, res) => {
-    const { MatchMakingId, ClientName, SlotStart, SlotEnd, BookedByVendor, ClientId } = req.body;
+    const { MatchMakingId, ClientName, SlotStart, SlotEnd, BookedByVendor, ClientId, userName } = req.body;
 
     try {
         // Check if already booked
@@ -35,8 +35,8 @@ router.post("/", async (req, res) => {
 
         // Book slot
         const [result] = await pool.query(
-            "INSERT INTO matchMakingSlot_bookings (MatchMakingId, ClientName, SlotStart, SlotEnd, BookedByVendor, ClientId) VALUES (?,?,?,?,?,?)",
-            [MatchMakingId, ClientName, SlotStart, SlotEnd, BookedByVendor, ClientId]
+            "INSERT INTO matchMakingSlot_bookings (MatchMakingId, ClientName, SlotStart, SlotEnd, BookedByVendor, ClientId, userName) VALUES (?,?,?,?,?,?,?)",
+            [MatchMakingId, ClientName, SlotStart, SlotEnd, BookedByVendor, ClientId, userName]
         );
 
         res.json({ message: "Slot booked successfully", BookingId: result.insertId });
