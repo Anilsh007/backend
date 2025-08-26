@@ -47,21 +47,17 @@ router.post("/", async (req, res) => {
     }
 });
 
-// ✅ Get booked slots for a given MatchMakingId
+// ✅ Get booked slots for a given MatchMakingId (include who booked it)
 router.get('/status/:matchMakingId', async (req, res) => {
     const { matchMakingId } = req.params;
     try {
-        const [rows] = await pool.query(
-            `SELECT ClientName, SlotStart, SlotEnd 
-             FROM matchMakingSlot_bookings 
-             WHERE MatchMakingId = ?`,
-            [matchMakingId]
-        );
+        const [rows] = await pool.query(`SELECT  ClientName, SlotStart, SlotEnd, eventDate, BookedByVendor, ClientId, userName FROM matchMakingSlot_bookings WHERE MatchMakingId = ? ORDER BY SlotStart`, [matchMakingId]);
         res.json(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: 'Error fetching booked slots' });
     }
 });
+
 
 module.exports = router;
