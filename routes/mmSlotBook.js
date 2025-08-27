@@ -60,4 +60,31 @@ router.get('/status/:matchMakingId', async (req, res) => {
 });
 
 
+// ✅ Cancel a booking
+router.delete("/:bookingId", async (req, res) => {
+  const { bookingId } = req.params;
+  const { vendorCode } = req.body; // who is cancelling
+
+  try {
+    // Check ownership → only same vendor who booked can cancel
+    const [rows] = await pool.query(
+      "SELECT * FROM matchMakingSlot_bookings WHERE BookingId=? AND BookedByVendor=?",
+      [bookingId, vendorCode]
+    );
+
+    if (rows.length === 0) {
+      return res.status(403).json({ message: "You cannot cancel this booking." });
+    }
+
+    await pool.query("DELETE FROM matchMakingSlot_bookings WHERE BookingId=?", [
+      bookingId,
+    ]);
+
+    res.json({ message: "Booking cancelled successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
