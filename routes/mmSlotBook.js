@@ -51,7 +51,7 @@ router.post("/", async (req, res) => {
 router.get('/status/:matchMakingId', async (req, res) => {
     const { matchMakingId } = req.params;
     try {
-        const [rows] = await pool.query(`SELECT  ClientName, SlotStart, SlotEnd, eventDate, BookedByVendor, ClientId, userName FROM matchMakingSlot_bookings WHERE MatchMakingId = ? ORDER BY SlotStart`, [matchMakingId]);
+        const [rows] = await pool.query(`SELECT  BookingId, ClientName, SlotStart, SlotEnd, eventDate, BookedByVendor, ClientId, userName FROM matchMakingSlot_bookings WHERE MatchMakingId = ? ORDER BY SlotStart`, [matchMakingId]);
         res.json(rows);
     } catch (err) {
         console.error(err);
