@@ -18,37 +18,36 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// ✅ Serve static files from 'public' folder
+// ✅ Serve static files
 app.use(express.static('public'));
-
-// ✅ Serve uploaded images statically from /uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ✅ Client User routes
+// ✅ Route Imports
 const clientAdminRoutes = require('./routes/clientAdmin');
-app.use('/api/client-admins', clientAdminRoutes);
-
-// ✅ Vendor routes
 const vendorRoutes = require('./routes/vendorRoutes');
-app.use('/api/vendors', vendorRoutes);
-
-// ✅ User routes
-const clientUser = require('./routes/clientUser');
-app.use('/api/clientUser', clientUser);
-
-// ✅ Email routes
+const clientUserRoutes = require('./routes/clientUser');
 const emailRoutes = require('./routes/emailRoutes');
-app.use('/api/email', emailRoutes);
-
-// ✅ Matchmaking routes
 const matchMakingRoutes = require('./routes/matchMaking');
-app.use('/api/matchmaking', matchMakingRoutes);
-
-// ✅ Matchmaking Slot Booking routes
 const mmSlotBookRoutes = require('./routes/mmSlotBook');
+
+// ✅ NEW — Auth Routes (Login & Logout)
+const authRoutes = require('./routes/auth');
+
+// ✅ Route Mounts
+app.use('/api/client-admins', clientAdminRoutes);
+app.use('/api/vendors', vendorRoutes);
+app.use('/api/clientUser', clientUserRoutes);
+app.use('/api/email', emailRoutes);
+app.use('/api/matchmaking', matchMakingRoutes);
 app.use('/api/mmSlotBook', mmSlotBookRoutes);
 
-// ✅ Start server after DB check
+// ✅ Mount Auth Route
+app.use('/api/auth', authRoutes);
+
+const eventRoutes = require('./routes/events');
+app.use('/api/events', eventRoutes);
+
+// ✅ Start Server
 async function startServer() {
   await testDBConnection();
   app.listen(PORT, () => {
