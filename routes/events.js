@@ -9,15 +9,19 @@ const path = require('path');
 // ==================== Multer Storage ====================
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const { ClientId, date, time } = req.body;
-    if (!ClientId || !date || !time) {
-      return cb(new Error('Missing ClientId, date, or time field'));
-    }
+    try {
+      const { ClientId, date, time } = req.body;
+      if (!ClientId || !date || !time) {
+        return cb(new Error('Missing ClientId, date, or time field'));
+      }
 
-    const folderName = `${date}_${time.replace(/:/g, '-')}`;
-    const uploadPath = path.join(__dirname, `../uploads/${ClientId}/events/${folderName}`);
-    fs.mkdirSync(uploadPath, { recursive: true });
-    cb(null, uploadPath);
+      const folderName = `${date}_${time.replace(/:/g, '-')}`;
+      const uploadPath = path.join(__dirname, `../uploads/${ClientId}/events/${folderName}`);
+      fs.mkdirSync(uploadPath, { recursive: true });
+      cb(null, uploadPath);
+    } catch (err) {
+      cb(err);
+    }
   },
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}-${file.originalname}`);
@@ -42,6 +46,10 @@ router.post('/', upload.array('logos', 10), async (req, res) => {
       description,
     } = req.body;
 
+    if (!ClientId || !title || !date) {
+      return res.status(400).json({ error: 'Missing required fields (ClientId, title, date)' });
+    }
+
     const logos = req.files ? req.files.map((f) => f.filename) : [];
 
     const [result] = await pool.query(
@@ -51,7 +59,12 @@ router.post('/', upload.array('logos', 10), async (req, res) => {
       [ClientId, title, date, time, Address1, Address2, city, state, zip, description, JSON.stringify(logos)]
     );
 
-    res.status(201).json({ message: 'Event created successfully', id: result.insertId });
+    res.status(201).json({
+      message: '✅ Event created successfully',
+      id: result.insertId,
+      title,
+      date,
+    });
   } catch (error) {
     console.error('❌ Error creating event:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -62,7 +75,10 @@ router.post('/', upload.array('logos', 10), async (req, res) => {
 router.get('/:ClientId', async (req, res) => {
   try {
     const { ClientId } = req.params;
-    const [rows] = await pool.query('SELECT * FROM events_created WHERE ClientId = ?', [ClientId]);
+    const [rows] = await pool.query(
+      'SELECT * FROM events_created WHERE ClientId = ? ORDER BY date DESC',
+      [ClientId]
+    );
     res.json(rows);
   } catch (error) {
     console.error('❌ Error fetching events:', error);
@@ -97,7 +113,11 @@ router.put('/:id', upload.array('logos', 10), async (req, res) => {
       [ClientId, title, date, time, Address1, Address2, city, state, zip, description, JSON.stringify(logos), id]
     );
 
-    res.json({ message: 'Event updated successfully' });
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+
+    res.json({ message: '✅ Event updated successfully' });
   } catch (error) {
     console.error('❌ Error updating event:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -108,8 +128,13 @@ router.put('/:id', upload.array('logos', 10), async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    await pool.query('DELETE FROM events_created WHERE id = ?', [id]);
-    res.json({ message: 'Event deleted successfully' });
+    const [result] = await pool.query('DELETE FROM events_created WHERE id = ?', [id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+
+    res.json({ message: '✅ Event deleted successfully' });
   } catch (error) {
     console.error('❌ Error deleting event:', error);
     res.status(500).json({ error: 'Internal server error' });
