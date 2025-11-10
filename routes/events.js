@@ -1,7 +1,7 @@
 // routes/events.js
 const express = require('express');
 const router = express.Router();
-const { pool } = require('../utils/db'); // ✅ Correct destructuring
+const { pool } = require('../utils/db');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
@@ -15,9 +15,17 @@ const storage = multer.diskStorage({
         return cb(new Error('Missing ClientId, date, or time field'));
       }
 
-      const folderName = `${date}_${time.replace(/:/g, '-')}`;
+      // ✅ Sanitize date/time for folder name
+      const safeDate = date.replace(/[:T.Z]/g, '-');
+      const safeTime = time.replace(/[:]/g, '-');
+      const folderName = `${safeDate}_${safeTime}`;
+
+      // ✅ Ensure ClientId folder and nested structure exist
       const uploadPath = path.join(__dirname, `../uploads/${ClientId}/events/${folderName}`);
       fs.mkdirSync(uploadPath, { recursive: true });
+
+      // Save folder name in request for later DB use
+      req.eventFolderPath = `/uploads/${ClientId}/events/${folderName}`;
       cb(null, uploadPath);
     } catch (err) {
       cb(err);
@@ -50,7 +58,9 @@ router.post('/', upload.array('logos', 10), async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields (ClientId, title, date)' });
     }
 
-    const logos = req.files ? req.files.map((f) => f.filename) : [];
+    const logos = req.files
+      ? req.files.map((f) => `${req.eventFolderPath}/${f.filename}`)
+      : [];
 
     const [result] = await pool.query(
       `INSERT INTO events_created 
@@ -103,7 +113,9 @@ router.put('/:id', upload.array('logos', 10), async (req, res) => {
       description,
     } = req.body;
 
-    const logos = req.files ? req.files.map((f) => f.filename) : [];
+    const logos = req.files
+      ? req.files.map((f) => `${req.eventFolderPath}/${f.filename}`)
+      : [];
 
     const [result] = await pool.query(
       `UPDATE events_created SET 
