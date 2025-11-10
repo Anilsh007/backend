@@ -3,43 +3,40 @@ const router = express.Router();
 const { pool } = require('../utils/db');
 const multer = require('multer');
 const fs = require('fs');
+const fsPromises = require('fs').promises;
 const path = require('path');
 
 // ==================== Multer Storage ====================
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: async (req, file, cb) => {
     try {
       const { ClientId, date, time } = req.body;
+      if (!ClientId) return cb(new Error('ClientId is required'));
 
-      if (!ClientId) {
-        return cb(new Error('Missing ClientId field'));
-      }
-
-      // Generate safe folder name
+      // Make safe folder names
       const safeDate = (date || new Date().toISOString()).replace(/[:T.Z]/g, '-');
       const safeTime = (time || '00-00').replace(/[:]/g, '-');
       const folderName = `${safeDate}_${safeTime}`;
 
-      // Base path: /var/www/backend/uploads/<ClientId>/events/<folderName>
-      const basePath = path.join(__dirname, '..', 'uploads', ClientId);
-      const eventsPath = path.join(basePath, 'events');
-      const uploadPath = path.join(eventsPath, folderName);
+      // Example: /var/www/backend/uploads/aaa/events/2025-11-14_10-13
+      const dir = path.join(__dirname, '..', 'uploads', ClientId, 'events', folderName);
 
-      // Ensure full directory structure exists
-      fs.mkdirSync(uploadPath, { recursive: true });
+      // Ensure folder exists
+      await fsPromises.mkdir(dir, { recursive: true });
 
-      // Store the relative path for DB
+      // Store relative path for DB use
       req.eventFolderPath = `/uploads/${ClientId}/events/${folderName}`;
 
-      console.log('📁 Upload path created/exists:', uploadPath);
-      cb(null, uploadPath);
+      console.log('📁 Created or found folder:', dir);
+      cb(null, dir);
     } catch (err) {
-      console.error('❌ Multer destination error:', err);
+      console.error('❌ Folder creation error:', err);
       cb(err);
     }
   },
 
   filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
     cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
@@ -135,9 +132,7 @@ router.put('/:id', upload.array('logos', 10), async (req, res) => {
       description,
     } = req.body;
 
-    if (!ClientId) {
-      return res.status(400).json({ error: 'Missing ClientId field' });
-    }
+    if (!ClientId) return res.status(400).json({ error: 'Missing ClientId field' });
 
     const logos = req.files
       ? req.files.map((f) => `${req.eventFolderPath}/${f.filename}`)
@@ -164,9 +159,8 @@ router.put('/:id', upload.array('logos', 10), async (req, res) => {
       ]
     );
 
-    if (result.affectedRows === 0) {
+    if (result.affectedRows === 0)
       return res.status(404).json({ error: 'Event not found' });
-    }
 
     res.json({ message: '✅ Event updated successfully' });
   } catch (error) {
@@ -181,9 +175,8 @@ router.delete('/:id', async (req, res) => {
     const { id } = req.params;
     const [result] = await pool.query('DELETE FROM events_created WHERE id = ?', [id]);
 
-    if (result.affectedRows === 0) {
+    if (result.affectedRows === 0)
       return res.status(404).json({ error: 'Event not found' });
-    }
 
     res.json({ message: '✅ Event deleted successfully' });
   } catch (error) {
