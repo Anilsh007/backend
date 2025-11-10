@@ -11,20 +11,23 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     try {
       const { ClientId, date, time } = req.body;
-      if (!ClientId || !date || !time) {
-        return cb(new Error('Missing ClientId, date, or time field'));
+
+      if (!ClientId) {
+        return cb(new Error('Missing ClientId field'));
       }
 
-      // ✅ Sanitize date/time for folder name
-      const safeDate = date.replace(/[:T.Z]/g, '-');
-      const safeTime = time.replace(/[:]/g, '-');
+      const safeDate = (date || new Date().toISOString()).replace(/[:T.Z]/g, '-');
+      const safeTime = (time || '00-00').replace(/[:]/g, '-');
       const folderName = `${safeDate}_${safeTime}`;
 
-      // ✅ Ensure ClientId folder and nested structure exist
-      const uploadPath = path.join(__dirname, `../uploads/${ClientId}/events/${folderName}`);
+      // Always ensure events folder exists first
+      const eventsPath = path.join(__dirname, `../uploads/${ClientId}/events`);
+      fs.mkdirSync(eventsPath, { recursive: true });
+
+      // Then create subfolder for this event
+      const uploadPath = path.join(eventsPath, folderName);
       fs.mkdirSync(uploadPath, { recursive: true });
 
-      // Save folder name in request for later DB use
       req.eventFolderPath = `/uploads/${ClientId}/events/${folderName}`;
       cb(null, uploadPath);
     } catch (err) {
