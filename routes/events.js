@@ -1,4 +1,3 @@
-// routes/events.js
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../utils/db');
@@ -16,24 +15,30 @@ const storage = multer.diskStorage({
         return cb(new Error('Missing ClientId field'));
       }
 
+      // Generate safe folder name
       const safeDate = (date || new Date().toISOString()).replace(/[:T.Z]/g, '-');
       const safeTime = (time || '00-00').replace(/[:]/g, '-');
       const folderName = `${safeDate}_${safeTime}`;
 
-      // Always ensure events folder exists first
-      const eventsPath = path.join(__dirname, `../uploads/${ClientId}/events`);
-      fs.mkdirSync(eventsPath, { recursive: true });
-
-      // Then create subfolder for this event
+      // Base path: /var/www/backend/uploads/<ClientId>/events/<folderName>
+      const basePath = path.join(__dirname, '..', 'uploads', ClientId);
+      const eventsPath = path.join(basePath, 'events');
       const uploadPath = path.join(eventsPath, folderName);
+
+      // Ensure full directory structure exists
       fs.mkdirSync(uploadPath, { recursive: true });
 
+      // Store the relative path for DB
       req.eventFolderPath = `/uploads/${ClientId}/events/${folderName}`;
+
+      console.log('📁 Upload path created/exists:', uploadPath);
       cb(null, uploadPath);
     } catch (err) {
+      console.error('❌ Multer destination error:', err);
       cb(err);
     }
   },
+
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}-${file.originalname}`);
   },
@@ -58,7 +63,9 @@ router.post('/', upload.array('logos', 10), async (req, res) => {
     } = req.body;
 
     if (!ClientId || !title || !date) {
-      return res.status(400).json({ error: 'Missing required fields (ClientId, title, date)' });
+      return res
+        .status(400)
+        .json({ error: 'Missing required fields (ClientId, title, date)' });
     }
 
     const logos = req.files
@@ -69,7 +76,19 @@ router.post('/', upload.array('logos', 10), async (req, res) => {
       `INSERT INTO events_created 
       (ClientId, title, date, time, Address1, Address2, city, state, zip, description, logos)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [ClientId, title, date, time, Address1, Address2, city, state, zip, description, JSON.stringify(logos)]
+      [
+        ClientId,
+        title,
+        date,
+        time,
+        Address1,
+        Address2,
+        city,
+        state,
+        zip,
+        description,
+        JSON.stringify(logos),
+      ]
     );
 
     res.status(201).json({
@@ -116,6 +135,10 @@ router.put('/:id', upload.array('logos', 10), async (req, res) => {
       description,
     } = req.body;
 
+    if (!ClientId) {
+      return res.status(400).json({ error: 'Missing ClientId field' });
+    }
+
     const logos = req.files
       ? req.files.map((f) => `${req.eventFolderPath}/${f.filename}`)
       : [];
@@ -125,7 +148,20 @@ router.put('/:id', upload.array('logos', 10), async (req, res) => {
         ClientId=?, title=?, date=?, time=?, Address1=?, Address2=?, 
         city=?, state=?, zip=?, description=?, logos=? 
       WHERE id=?`,
-      [ClientId, title, date, time, Address1, Address2, city, state, zip, description, JSON.stringify(logos), id]
+      [
+        ClientId,
+        title,
+        date,
+        time,
+        Address1,
+        Address2,
+        city,
+        state,
+        zip,
+        description,
+        JSON.stringify(logos),
+        id,
+      ]
     );
 
     if (result.affectedRows === 0) {

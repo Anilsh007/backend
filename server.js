@@ -24,7 +24,6 @@ app.use(express.static('public'));
 // ✅ Serve uploads folder publicly
 // This covers both local /uploads and ../uploads (in case it's outside the project root)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // ✅ Route Imports
 const clientAdminRoutes = require('./routes/clientAdmin');
