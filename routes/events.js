@@ -1,3 +1,4 @@
+// backend/routes/events.js
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../utils/db');
@@ -13,21 +14,21 @@ const storage = multer.diskStorage({
       const { ClientId, date, time } = req.body;
       if (!ClientId) return cb(new Error('ClientId is required'));
 
-      // Make safe folder names
+      // Safe folder names
       const safeDate = (date || new Date().toISOString()).replace(/[:T.Z]/g, '-');
       const safeTime = (time || '00-00').replace(/[:]/g, '-');
       const folderName = `${safeDate}_${safeTime}`;
 
-      // Example: /var/www/backend/uploads/aaa/events/2025-11-14_10-13
+      // Example path: /var/www/backend/uploads/aaa/events/2025-11-14_10-13
       const dir = path.join(__dirname, '..', 'uploads', ClientId, 'events', folderName);
 
       // Ensure folder exists
       await fsPromises.mkdir(dir, { recursive: true });
 
-      // Store relative path for DB use
+      // Store relative path for later DB reference
       req.eventFolderPath = `/uploads/${ClientId}/events/${folderName}`;
-
       console.log('📁 Created or found folder:', dir);
+
       cb(null, dir);
     } catch (err) {
       console.error('❌ Folder creation error:', err);
@@ -36,8 +37,17 @@ const storage = multer.diskStorage({
   },
 
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${Date.now()}-${file.originalname}`);
+    // ✅ Sanitize filename (remove spaces and unsafe chars)
+    const safeFileName = file.originalname
+      .replace(/\s+/g, '_')           // Replace spaces with underscores
+      .replace(/[^a-zA-Z0-9._-]/g, ''); // Remove any weird characters
+
+    const ext = path.extname(safeFileName);
+    const baseName = path.basename(safeFileName, ext);
+
+    // ✅ Prefix with timestamp for uniqueness
+    const finalName = `${Date.now()}-${baseName}${ext}`;
+    cb(null, finalName);
   },
 });
 
@@ -60,9 +70,7 @@ router.post('/', upload.array('logos', 10), async (req, res) => {
     } = req.body;
 
     if (!ClientId || !title || !date) {
-      return res
-        .status(400)
-        .json({ error: 'Missing required fields (ClientId, title, date)' });
+      return res.status(400).json({ error: 'Missing required fields (ClientId, title, date)' });
     }
 
     const logos = req.files
@@ -93,6 +101,7 @@ router.post('/', upload.array('logos', 10), async (req, res) => {
       id: result.insertId,
       title,
       date,
+      logos,
     });
   } catch (error) {
     console.error('❌ Error creating event:', error);
