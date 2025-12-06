@@ -13,7 +13,6 @@ const storage = multer.diskStorage({
       const { ClientId, date, StartTime } = req.body;
       if (!ClientId) return cb(new Error("ClientId is required"));
 
-      // Safe folder names
       const safeDate = (date || new Date().toISOString()).replace(/[:T.Z]/g, "-");
       const safeStart = (StartTime || "00:00").replace(/[:]/g, "-");
 
@@ -68,6 +67,7 @@ router.post("/", upload.array("logos", 10), async (req, res) => {
       state,
       zip,
       description,
+      priceBucket,
     } = req.body;
 
     if (!ClientId || !title || !date) {
@@ -76,15 +76,18 @@ router.post("/", upload.array("logos", 10), async (req, res) => {
         .json({ error: "Missing required fields (ClientId, title, date)" });
     }
 
+    // Parse priceBucket JSON
+    const parsedPriceBucket = priceBucket ? JSON.parse(priceBucket) : [];
+
     const logos = req.files
       ? req.files.map((f) => `${req.eventFolderPath}/${f.filename}`)
       : [];
 
     const [result] = await pool.query(
       `INSERT INTO events_created 
-      (ClientId, title, date, StartTime, EndTime, TimeDuration, 
-       Address1, Address2, city, state, zip, description, logos)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (ClientId, title, date, StartTime, EndTime, TimeDuration,
+       Address1, Address2, city, state, zip, description, logos, priceBucket)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         ClientId,
         title,
@@ -99,6 +102,7 @@ router.post("/", upload.array("logos", 10), async (req, res) => {
         zip,
         description,
         JSON.stringify(logos),
+        JSON.stringify(parsedPriceBucket),
       ]
     );
 
@@ -111,6 +115,7 @@ router.post("/", upload.array("logos", 10), async (req, res) => {
       EndTime,
       TimeDuration,
       logos,
+      priceBucket: parsedPriceBucket,
     });
   } catch (error) {
     console.error("❌ Error creating event:", error);
@@ -152,10 +157,13 @@ router.put("/:id", upload.array("logos", 10), async (req, res) => {
       state,
       zip,
       description,
+      priceBucket,
     } = req.body;
 
     if (!ClientId)
       return res.status(400).json({ error: "Missing ClientId field" });
+
+    const parsedPriceBucket = priceBucket ? JSON.parse(priceBucket) : [];
 
     const logos = req.files
       ? req.files.map((f) => `${req.eventFolderPath}/${f.filename}`)
@@ -164,7 +172,8 @@ router.put("/:id", upload.array("logos", 10), async (req, res) => {
     const [result] = await pool.query(
       `UPDATE events_created SET 
         ClientId=?, title=?, date=?, StartTime=?, EndTime=?, TimeDuration=?, 
-        Address1=?, Address2=?, city=?, state=?, zip=?, description=?, logos=? 
+        Address1=?, Address2=?, city=?, state=?, zip=?, description=?, logos=?, 
+        priceBucket=?
       WHERE id=?`,
       [
         ClientId,
@@ -180,6 +189,7 @@ router.put("/:id", upload.array("logos", 10), async (req, res) => {
         zip,
         description,
         JSON.stringify(logos),
+        JSON.stringify(parsedPriceBucket),
         id,
       ]
     );
