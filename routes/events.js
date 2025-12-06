@@ -1,66 +1,67 @@
 // backend/routes/events.js
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { pool } = require('../utils/db');
-const multer = require('multer');
-const fs = require('fs');
-const fsPromises = require('fs').promises;
-const path = require('path');
+const { pool } = require("../utils/db");
+const multer = require("multer");
+const fsPromises = require("fs").promises;
+const path = require("path");
 
 // ==================== Multer Storage ====================
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
     try {
-      const { ClientId, date, time } = req.body;
-      if (!ClientId) return cb(new Error('ClientId is required'));
+      const { ClientId, date, StartTime } = req.body;
+      if (!ClientId) return cb(new Error("ClientId is required"));
 
       // Safe folder names
-      const safeDate = (date || new Date().toISOString()).replace(/[:T.Z]/g, '-');
-      const safeTime = (time || '00-00').replace(/[:]/g, '-');
-      const folderName = `${safeDate}_${safeTime}`;
+      const safeDate = (date || new Date().toISOString()).replace(/[:T.Z]/g, "-");
+      const safeStart = (StartTime || "00:00").replace(/[:]/g, "-");
 
-      // Example path: /var/www/backend/uploads/aaa/events/2025-11-14_10-13
-      const dir = path.join(__dirname, '..', 'uploads', ClientId, 'events', folderName);
+      const folderName = `${safeDate}_${safeStart}`;
 
-      // Ensure folder exists
+      const dir = path.join(
+        __dirname,
+        "..",
+        "uploads",
+        ClientId,
+        "events",
+        folderName
+      );
+
       await fsPromises.mkdir(dir, { recursive: true });
 
-      // Store relative path for later DB reference
       req.eventFolderPath = `/uploads/${ClientId}/events/${folderName}`;
-      console.log('📁 Created or found folder:', dir);
 
       cb(null, dir);
     } catch (err) {
-      console.error('❌ Folder creation error:', err);
       cb(err);
     }
   },
 
   filename: (req, file, cb) => {
-    // ✅ Sanitize filename (remove spaces and unsafe chars)
     const safeFileName = file.originalname
-      .replace(/\s+/g, '_')           // Replace spaces with underscores
-      .replace(/[^a-zA-Z0-9._-]/g, ''); // Remove any weird characters
+      .replace(/\s+/g, "_")
+      .replace(/[^a-zA-Z0-9._-]/g, "");
 
     const ext = path.extname(safeFileName);
     const baseName = path.basename(safeFileName, ext);
 
-    // ✅ Prefix with timestamp for uniqueness
-    const finalName = `${Date.now()}-${baseName}${ext}`;
-    cb(null, finalName);
+    cb(null, `${Date.now()}-${baseName}${ext}`);
   },
 });
 
 const upload = multer({ storage });
 
 // ==================== CREATE EVENT ====================
-router.post('/', upload.array('logos', 10), async (req, res) => {
+router.post("/", upload.array("logos", 10), async (req, res) => {
   try {
     const {
       ClientId,
       title,
       date,
-      time,
+      StartTime,
+      EndTime,
+      TimeDuration,
       Address1,
       Address2,
       city,
@@ -70,7 +71,9 @@ router.post('/', upload.array('logos', 10), async (req, res) => {
     } = req.body;
 
     if (!ClientId || !title || !date) {
-      return res.status(400).json({ error: 'Missing required fields (ClientId, title, date)' });
+      return res
+        .status(400)
+        .json({ error: "Missing required fields (ClientId, title, date)" });
     }
 
     const logos = req.files
@@ -79,13 +82,16 @@ router.post('/', upload.array('logos', 10), async (req, res) => {
 
     const [result] = await pool.query(
       `INSERT INTO events_created 
-      (ClientId, title, date, time, Address1, Address2, city, state, zip, description, logos)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (ClientId, title, date, StartTime, EndTime, TimeDuration, 
+       Address1, Address2, city, state, zip, description, logos)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         ClientId,
         title,
         date,
-        time,
+        StartTime,
+        EndTime,
+        TimeDuration,
         Address1,
         Address2,
         city,
@@ -97,42 +103,49 @@ router.post('/', upload.array('logos', 10), async (req, res) => {
     );
 
     res.status(201).json({
-      message: '✅ Event created successfully',
+      message: "✅ Event created successfully",
       id: result.insertId,
       title,
       date,
+      StartTime,
+      EndTime,
+      TimeDuration,
       logos,
     });
   } catch (error) {
-    console.error('❌ Error creating event:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("❌ Error creating event:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
 // ==================== GET EVENTS BY CLIENT ====================
-router.get('/:ClientId', async (req, res) => {
+router.get("/:ClientId", async (req, res) => {
   try {
     const { ClientId } = req.params;
+
     const [rows] = await pool.query(
-      'SELECT * FROM events_created WHERE ClientId = ? ORDER BY date DESC',
+      "SELECT * FROM events_created WHERE ClientId = ? ORDER BY date DESC",
       [ClientId]
     );
+
     res.json(rows);
   } catch (error) {
-    console.error('❌ Error fetching events:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("❌ Error fetching events:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
 // ==================== UPDATE EVENT ====================
-router.put('/:id', upload.array('logos', 10), async (req, res) => {
+router.put("/:id", upload.array("logos", 10), async (req, res) => {
   try {
     const { id } = req.params;
     const {
       ClientId,
       title,
       date,
-      time,
+      StartTime,
+      EndTime,
+      TimeDuration,
       Address1,
       Address2,
       city,
@@ -141,7 +154,8 @@ router.put('/:id', upload.array('logos', 10), async (req, res) => {
       description,
     } = req.body;
 
-    if (!ClientId) return res.status(400).json({ error: 'Missing ClientId field' });
+    if (!ClientId)
+      return res.status(400).json({ error: "Missing ClientId field" });
 
     const logos = req.files
       ? req.files.map((f) => `${req.eventFolderPath}/${f.filename}`)
@@ -149,14 +163,16 @@ router.put('/:id', upload.array('logos', 10), async (req, res) => {
 
     const [result] = await pool.query(
       `UPDATE events_created SET 
-        ClientId=?, title=?, date=?, time=?, Address1=?, Address2=?, 
-        city=?, state=?, zip=?, description=?, logos=? 
+        ClientId=?, title=?, date=?, StartTime=?, EndTime=?, TimeDuration=?, 
+        Address1=?, Address2=?, city=?, state=?, zip=?, description=?, logos=? 
       WHERE id=?`,
       [
         ClientId,
         title,
         date,
-        time,
+        StartTime,
+        EndTime,
+        TimeDuration,
         Address1,
         Address2,
         city,
@@ -169,28 +185,32 @@ router.put('/:id', upload.array('logos', 10), async (req, res) => {
     );
 
     if (result.affectedRows === 0)
-      return res.status(404).json({ error: 'Event not found' });
+      return res.status(404).json({ error: "Event not found" });
 
-    res.json({ message: '✅ Event updated successfully' });
+    res.json({ message: "✅ Event updated successfully" });
   } catch (error) {
-    console.error('❌ Error updating event:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("❌ Error updating event:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
 // ==================== DELETE EVENT ====================
-router.delete('/:id', async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const [result] = await pool.query('DELETE FROM events_created WHERE id = ?', [id]);
+
+    const [result] = await pool.query(
+      "DELETE FROM events_created WHERE id = ?",
+      [id]
+    );
 
     if (result.affectedRows === 0)
-      return res.status(404).json({ error: 'Event not found' });
+      return res.status(404).json({ error: "Event not found" });
 
-    res.json({ message: '✅ Event deleted successfully' });
+    res.json({ message: "✅ Event deleted successfully" });
   } catch (error) {
-    console.error('❌ Error deleting event:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("❌ Error deleting event:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
